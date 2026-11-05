@@ -289,6 +289,16 @@ body:has(#tab-painel:not(.hidden)) #submenu{padding-top:0}
 .logo-farol .a-luz{background:linear-gradient(165deg,#FFD25A 0%,#F5B82E 28%,var(--cor) 62%); -webkit-background-clip:text; background-clip:text; color:transparent}
 header h1 .logo-farol{--cor:var(--on-dark)}
 .login-card h1 .logo-farol{--cor:var(--navy)}
+/* ---- Hortifrutigranjeiros ---- */
+.hf-badge{display:inline-block; background:#E3F4EA; color:#1F6B47; border:1px solid #BFE3CD; border-radius:999px; padding:2px 10px; font-size:.7rem; font-weight:700; letter-spacing:.02em; white-space:nowrap}
+.hf-resumo{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; padding:12px 18px; background:var(--card); border-bottom:1px solid var(--line)}
+.hf-resumo div{display:flex; flex-direction:column; gap:2px; font-size:.74rem; color:var(--text-2)}
+.hf-resumo b{font-size:.98rem; color:var(--navy); font-variant-numeric:tabular-nums}
+.hf-resumo .destaque b{color:#1F6B47}
+.hf-reforcos{padding:10px 18px; border-bottom:1px solid var(--line); font-size:.8rem}
+.hf-reforcos h3{margin:0 0 6px; font-size:.85rem; color:var(--navy)}
+.hf-itens-tit{padding:8px 18px 0; font-size:.76rem; color:var(--text-2)}
+body.perfil-restrito .btn-reforco{display:none !important}
 .login-card h1{font-size:2.1rem; margin:0 0 6px; font-weight:700; letter-spacing:.1em; color:var(--navy)}
 .login-card .login-sub{color:var(--navy); font-size:.84rem; font-weight:600; margin:0 0 4px; line-height:1.35}
 .login-card .login-slogan{color:var(--amber-dark); font-size:.8rem; font-style:italic; margin:0 0 16px}
@@ -400,6 +410,23 @@ header h1 .logo-farol{--cor:var(--on-dark)}
   </div>
 </div>
 
+<div id="reforco-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:60; display:flex; align-items:center; justify-content:center; padding:20px">
+  <div class="card" style="max-width:520px; width:100%; margin:0; max-height:90vh; overflow-y:auto">
+    <h2 id="rf-titulo">Reforçar empenho</h2>
+    <p id="rf-info" style="color:var(--muted); font-size:.85rem; line-height:1.45"></p>
+    <div class="grid">
+      <div class="field"><label>Valor do reforço (R$)</label><input id="rf-valor" inputmode="decimal" placeholder="Ex: 20.000,00" autocomplete="off"></div>
+      <div class="field"><label>Data</label><input id="rf-data" type="date"></div>
+      <div class="field" style="grid-column:1/-1"><label>Documento / identificação do reforço (opcional)</label><input id="rf-doc" placeholder="Ex: NE de reforço 2026NE000321"></div>
+    </div>
+    <div id="msg-reforco" style="margin-top:12px"></div>
+    <div class="actions" style="margin-top:16px">
+      <button class="primary" id="btn-confirmar-reforco" type="button">Confirmar reforço</button>
+      <button id="btn-fechar-reforco" type="button">Voltar</button>
+    </div>
+  </div>
+</div>
+
 <div id="cancel-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:60; display:flex; align-items:center; justify-content:center; padding:20px">
   <div class="card" style="max-width:520px; width:100%; margin:0; max-height:90vh; overflow-y:auto">
     <h2 id="cn-titulo">Cancelar empenho</h2>
@@ -458,8 +485,11 @@ header h1 .logo-farol{--cor:var(--on-dark)}
         <div class="field"><label>Número da nota de empenho (NE)</label><input id="m-numero" placeholder="Ex: 2025NE1"></div>
         <div class="field"><label>Empresa favorecida</label><input id="m-empresa" placeholder="Razão social" list="lista-empresas"></div>
         <div class="field"><label>SOLEMP</label><input id="m-solemp" placeholder="Ex: SOL-003"></div>
-        <div class="field"><label>Célula de Crédito (opcional)</label><select id="m-celula"></select></div>
+        <div class="field"><label id="m-celula-label">Célula de Crédito (opcional)</label><select id="m-celula"></select></div>
+        <div class="field"><label>Tipo de empenho</label><select id="m-tipo"><option value="comum">Comum</option><option value="hortifruti">Hortifrutigranjeiro</option></select></div>
+        <div class="field hidden" id="m-valor-hf-wrap"><label>Valor inicial do empenho (R$)</label><input id="m-valor-hf" inputmode="decimal" placeholder="Em branco = soma dos itens"></div>
       </div>
+      <p id="m-hf-info" class="hidden" style="color:var(--muted); font-size:.78rem; margin:10px 0 0">Empenho de <b>Hortifrutigranjeiros</b>: a célula de crédito é obrigatória e o valor inicial é descontado dela. Os itens ficam guardados apenas para consulta e histórico. As notas fiscais são lançadas pelo valor total e descontadas do saldo do empenho. Para acrescentar saldo depois, use <b>Reforçar empenho</b> em "Saldo de Empenho".</p>
       <div class="tablewrap" style="margin-top:16px">
         <table id="tbl-multi-itens">
           <thead><tr><th>Item</th><th>UF</th><th>Vlr. unit. (R$)</th><th>Quantidade</th><th></th></tr></thead>
@@ -527,8 +557,15 @@ header h1 .logo-farol{--cor:var(--on-dark)}
       <h2>Registrar nota fiscal</h2>
       <div class="grid">
         <div class="field"><label>Número da nota fiscal</label><input id="nf-numero" placeholder="Ex: 55321"></div>
-        <div class="field"><label>Data de recebimento</label><input id="nf-data" type="date"></div>
+        <div class="field"><label id="nf-data-label">Data de recebimento</label><input id="nf-data" type="date"></div>
         <div class="field"><label>Número do empenho (NE) vinculado</label><select id="nf-ne"></select></div>
+      </div>
+      <div id="nf-hf-wrap" class="hidden" style="margin-top:18px">
+        <div style="margin-bottom:10px"><span class="hf-badge">Hortifrutigranjeiro</span> <span id="nf-hf-info" style="font-size:.84rem; color:var(--text-2)"></span></div>
+        <div class="grid">
+          <div class="field"><label>Empresa</label><input id="nf-hf-empresa" readonly></div>
+          <div class="field"><label>Valor total da nota fiscal (R$)</label><input id="nf-valor-hf" inputmode="decimal" placeholder="Ex: 15.000,00" autocomplete="off"></div>
+        </div>
       </div>
       <div id="nf-itens-wrap" class="hidden" style="margin-top:18px">
         <label>Itens deste empenho — informe a quantidade comprada nesta nota fiscal</label>
@@ -817,9 +854,29 @@ function empenhoFromDoc(d){
     valorTotal:Number(r.valorTotal), saldoQtd:Number(r.saldoQtd), saldoValor:Number(r.saldoValor),
     celulaId:r.celulaCreditoId||'', celulaNome:r.celulaCreditoNome||'',
     status:r.status||'', valorDevolvido:Number(r.valorDevolvido)||0, canceladoEm:Number(r.canceladoEm)||0,
-    canceladoPor:r.canceladoPor||'', celulaDevolucaoNome:r.celulaDevolucaoNome||'' };
+    canceladoPor:r.canceladoPor||'', celulaDevolucaoNome:r.celulaDevolucaoNome||'', tipo:r.tipo||'' };
 }
 function celulaFromDoc(d){ const r=d.data(); return { id:d.id, nome:r.nome||'', saldo:Number(r.saldo)||0 }; }
+function hfFromDoc(d){ const r=d.data(); return { id:d.id, numero:r.numero||'', empresa:r.empresaNome||'',
+  valorInicial:Number(r.valorInicial)||0, totalReforcos:Number(r.totalReforcos)||0, totalNFs:Number(r.totalNFs)||0,
+  saldo:Number(r.saldo)||0, celulaId:r.celulaCreditoId||'', celulaNome:r.celulaCreditoNome||'',
+  nfsRegistradas:r.nfsRegistradas||{}, reforcosDocs:r.reforcosDocs||{}, createdAt:Number(r.createdAt)||0 }; }
+function reforcoFromDoc(d){ const r=d.data(); return { id:d.id, hfId:r.hfId||'', numero:r.numero||'', valor:Number(r.valor)||0,
+  documento:r.documento||'', data:r.data||'', usuarioEmail:r.usuarioEmail||'', saldoApos:Number(r.saldoEmpenhoApos)||0, createdAt:Number(r.createdAt)||0 }; }
+// ---- Hortifrutigranjeiros: helpers ----
+function hfDoNE(numero){ return empenhosHF.find(h=>h.numero===numero) || null; }
+function ehHF(itens){ return !!(itens && itens.some(e=>e.tipo==='hortifruti')); }
+function ehHFNumero(numero){ return ehHF(empenhos.filter(e=>e.numero===numero)); }
+// valor total e saldo do NE: nos empenhos comuns vêm dos itens; nos de Hortifrutigranjeiros, do controle do empenho
+function valorTotalNE(ne, itens){
+  if(ehHF(itens)){ const h = hfDoNE(ne); if(h) return arredMoeda(h.valorInicial + h.totalReforcos); }
+  return arredMoeda(itens.reduce((s,e)=>s+(e.valorTotal||0),0));
+}
+function saldoNE(ne, itens){
+  if(ehHF(itens)){ const h = hfDoNE(ne); if(h) return arredMoeda(h.saldo); }
+  return arredMoeda(itens.reduce((s,e)=>s+(e.saldoValor||0),0));
+}
+function chaveRegistro(txt){ return String(txt||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'') || '_'; }
 function movimentoFromDoc(d){
   const r=d.data();
   return { id:d.id, celulaId:r.celulaId, celulaNome:r.celulaNome||'', tipo:r.tipo, valor:Number(r.valor)||0,
@@ -831,7 +888,7 @@ function nfFromDoc(d){
   return { id:d.id, numeroNF:r.numeroNF, data:r.data, empenhoId:r.empenhoId, numeroEmpenho:r.numeroEmpenho,
     item:r.item, qtd:Number(r.quantidade), valorBaixado:Number(r.valorBaixado),
     saldoAposQtd:Number(r.saldoQtdApos), saldoAposValor:Number(r.saldoValorApos), createdAt:Number(r.createdAt)||0,
-    responsavelEmail:r.responsavelEmail||'' };
+    responsavelEmail:r.responsavelEmail||'', hf:r.tipoNF==='hortifruti', hfId:r.hfId||'' };
 }
 function empresaFromDoc(d){
   const r = d.data();
@@ -857,6 +914,8 @@ function documentoFromDoc(d){
 }
 
 let empresas = [];
+let empenhosHF = [];   // controle de saldo dos empenhos de Hortifrutigranjeiros (um documento por NE)
+let reforcosHF = [];   // histórico de reforços
 let celulas = [];
 let movimentos = [];
 let assinaturas = [];
@@ -919,6 +978,15 @@ async function carregarDados(){
     celulas = celSnap.docs.map(celulaFromDoc);
     movimentos = movSnap.docs.map(movimentoFromDoc);
   }catch(e){ console.error('Erro ao carregar o Controle de Saldo:', e.code, e.message); celulas = []; movimentos = []; }
+
+  try{
+    const [hfSnap, rfSnap] = await Promise.all([
+      getDocs(query(collection(db,'empenhosHF'), where('userId','==',uidAtual))),
+      getDocs(query(collection(db,'reforcosHF'), where('userId','==',uidAtual)))
+    ]);
+    empenhosHF = hfSnap.docs.map(hfFromDoc);
+    reforcosHF = rfSnap.docs.map(reforcoFromDoc);
+  }catch(e){ console.error('Erro ao carregar os empenhos de Hortifrutigranjeiros:', e.code, e.message); empenhosHF = []; reforcosHF = []; }
 
   // configurações globais do sistema (nome da OM e logotipo) — lidas por todos, editadas só pelo admin
   try{
@@ -1225,8 +1293,9 @@ function renderPainel(){
   const cont = {ativo:0,processamento:0,finalizado:0,a_cancelar:0,cancelado:0};
   nes.forEach(ne=>{ if(cont[stNE[ne]]!==undefined) cont[stNE[ne]]++; });
   const validos = empenhos.filter(e=>stNE[e.numero]!=='cancelado');
-  const totalEmp = arredMoeda(validos.reduce((t,e)=>t+(e.valorTotal||0),0));
-  const saldoDisp = arredMoeda(validos.reduce((t,e)=>t+(e.saldoValor||0),0));
+  const nesValidos = nes.filter(ne=>stNE[ne]!=='cancelado');
+  const totalEmp = arredMoeda(nesValidos.reduce((t,ne)=>t+valorTotalNE(ne, porNE[ne]),0));
+  const saldoDisp = arredMoeda(nesValidos.reduce((t,ne)=>t+saldoNE(ne, porNE[ne]),0));
   const pctSaldo = totalEmp>0 ? saldoDisp/totalEmp*100 : 0;
   const pctExec = totalEmp>0 ? 100-pctSaldo : 0;
   const fmtPct = v=>v.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
@@ -1244,11 +1313,15 @@ function renderPainel(){
   const fornPedMes = new Set(pedMes.map(p=>p.empresaNome)).size;
 
   // pontos de atenção
-  const baixos = empenhos.filter(e=>stNE[e.numero]==='ativo' && e.saldoQtd>0 && e.saldoQtd < e.qtd*0.2)
-    .map(e=>({e, pct:e.qtd>0?e.saldoQtd/e.qtd*100:0})).sort((a,b)=>a.pct-b.pct);
+  const baixosItens = empenhos.filter(e=>e.tipo!=='hortifruti' && stNE[e.numero]==='ativo' && e.saldoQtd>0 && e.saldoQtd < e.qtd*0.2)
+    .map(e=>({e, pct:e.qtd>0?e.saldoQtd/e.qtd*100:0}));
+  const baixosHF = nes.filter(ne=>ehHF(porNE[ne]) && stNE[ne]==='ativo').map(ne=>{
+      const tot = valorTotalNE(ne, porNE[ne]), sal = saldoNE(ne, porNE[ne]);
+      return (tot>0 && sal>0 && sal < tot*0.2) ? { hf:true, ne, saldo:sal, pct:sal/tot*100 } : null; }).filter(Boolean);
+  const baixos = [...baixosItens, ...baixosHF].sort((a,b)=>a.pct-b.pct);
   const vig = nes.filter(ne=>['ativo','processamento'].includes(stNE[ne]))
     .map(ne=>{ const f=porNE[ne][0]; const v=f.vigencia; if(!/^\d{4}-\d{2}-\d{2}$/.test(v||'')) return null;
-      const saldo = arredMoeda(porNE[ne].reduce((t,e)=>t+(e.saldoValor||0),0)); const d = diasAte(v);
+      const saldo = saldoNE(ne, porNE[ne]); const d = diasAte(v);
       return (saldo>0 && d<=30) ? {ne, v, d, saldo} : null; }).filter(Boolean).sort((a,b)=>a.d-b.d);
   const qtdAtencao = baixos.length + vig.length;
 
@@ -1257,14 +1330,16 @@ function renderPainel(){
     <span class="tr"><i style="width:${nes.length?cont[st]/nes.length*100:0}%;background:${corSt[st]}"></i></span><span class="n">${cont[st]}</span></div>`).join('');
 
   const forn = {};
-  validos.forEach(e=>{ const k=e.empresa||'(sem empresa)'; if(!forn[k]) forn[k]={nes:new Set(), total:0, saldo:0};
-    forn[k].nes.add(e.numero); forn[k].total+=e.valorTotal||0; forn[k].saldo+=e.saldoValor||0; });
+  nesValidos.forEach(ne=>{ const k=(porNE[ne][0].empresa)||'(sem empresa)'; if(!forn[k]) forn[k]={nes:new Set(), total:0, saldo:0};
+    forn[k].nes.add(ne); forn[k].total+=valorTotalNE(ne, porNE[ne]); forn[k].saldo+=saldoNE(ne, porNE[ne]); });
   const topForn = Object.entries(forn).sort((a,b)=>b[1].saldo-a[1].saldo).slice(0,5);
   const linhasForn = topForn.length ? topForn.map(([nome,f])=>`<tr><td>${nome}</td><td>${f.nes.size}</td><td>${fmtMoney(arredMoeda(f.saldo))}</td><td>${f.total>0?fmtPct(100-f.saldo/f.total*100):'-'}</td></tr>`).join('')
     : `<tr><td colspan="4" class="empty">Nenhum empenho cadastrado.</td></tr>`;
 
   const alertas = [
-    ...baixos.slice(0,6).map(({e,pct})=>`<div class="alerta"><span class="tag baixo">Saldo baixo</span><span><b>${e.numero}</b> · ${e.item} — ${fmtQtd(e.saldoQtd)} ${e.uf||''} restantes (${fmtPct(pct)})</span></div>`),
+    ...baixos.slice(0,6).map(b=>b.hf
+      ? `<div class="alerta"><span class="tag baixo">Saldo baixo</span><span><b>${b.ne}</b> · Hortifrutigranjeiros — ${fmtMoney(b.saldo)} restantes (${fmtPct(b.pct)})</span></div>`
+      : `<div class="alerta"><span class="tag baixo">Saldo baixo</span><span><b>${b.e.numero}</b> · ${b.e.item} — ${fmtQtd(b.e.saldoQtd)} ${b.e.uf||''} restantes (${fmtPct(b.pct)})</span></div>`),
     ...vig.slice(0,6).map(x=>`<div class="alerta"><span class="tag vig">Vigência</span><span><b>${x.ne}</b> · ${x.d<0?`vencida em ${fmtDataBR(x.v)} (há ${-x.d} dia(s))`:(x.d===0?`vence hoje (${fmtDataBR(x.v)})`:`vence em ${fmtDataBR(x.v)} (${x.d} dia(s))`)} — saldo ${fmtMoney(x.saldo)}</span></div>`)
   ].join('') || `<div class="empty">Nenhum ponto de atenção no momento.</div>`;
 
@@ -1387,15 +1462,29 @@ document.getElementById('btn-salvar-multi').addEventListener('click', async ()=>
   const empresa = document.getElementById('m-empresa').value.trim();
   const solemp = document.getElementById('m-solemp').value.trim();
   const msg = document.getElementById('msg-multi');
+  let tipoEmp = document.getElementById('m-tipo').value === 'hortifruti' ? 'hortifruti' : 'comum';
 
   if(!numero || !empresa){
     msg.className='msg err'; msg.textContent='Preencha ao menos o número da nota de empenho e a empresa favorecida.';
     return;
   }
 
-  if(empenhos.some(e=>e.numero===numero)){
+  const neExistente = empenhos.some(e=>e.numero===numero);
+  if(neExistente){
     const c = checarOp(numero,'editar');
     if(!c.ok){ msg.className='msg err'; msg.textContent='Não é possível incluir itens neste empenho. '+c.msg; return; }
+    // o tipo de um empenho já cadastrado não muda: os novos itens seguem o tipo dele
+    const tipoExistente = ehHFNumero(numero) ? 'hortifruti' : 'comum';
+    if(tipoExistente!==tipoEmp){
+      msg.className='msg err';
+      msg.textContent = `O empenho ${numero} já está cadastrado como ${tipoExistente==='hortifruti'?'Hortifrutigranjeiro':'Comum'}. Selecione esse tipo para incluir itens nele.`;
+      return;
+    }
+    if(tipoEmp==='hortifruti' && document.getElementById('m-celula').value){
+      msg.className='msg err';
+      msg.textContent = `Os itens incluídos no empenho de Hortifrutigranjeiros ${numero} servem apenas para consulta e não alteram o saldo. Para acrescentar saldo, use "Reforçar empenho" em Saldo de Empenho. Deixe a célula de crédito em branco.`;
+      return;
+    }
   }
 
   const linhas = [...document.querySelectorAll('#tbl-multi-itens tbody tr')];
@@ -1416,9 +1505,21 @@ document.getElementById('btn-salvar-multi').addEventListener('click', async ()=>
     const valorTotal = arredMoeda(vunit*qtd);
     rows.push({ pregao, vigencia, numero, empresaNome:empresa, solemp, item, uf,
       valorUnitario:vunit, quantidade:qtd, valorTotal:valorTotal, saldoQtd:qtd, saldoValor:valorTotal,
-      status:'ativo', userId: usuarioAtual.uid, createdAt: Date.now() });
+      status:'ativo', userId: usuarioAtual.uid, createdAt: Date.now(), ...(tipoEmp==='hortifruti'?{tipo:'hortifruti'}:{}) });
   });
   if(erroLinha){ msg.className='msg err'; msg.textContent=erroLinha; return; }
+
+  // Hortifrutigranjeiros (novo empenho): célula obrigatória e valor inicial (informado ou soma dos itens)
+  let valorInicialHF = 0;
+  if(tipoEmp==='hortifruti' && !neExistente && rows.length){
+    if(!document.getElementById('m-celula').value){
+      msg.className='msg err'; msg.textContent='Empenho de Hortifrutigranjeiros: selecione a célula de crédito que terá o valor inicial descontado.'; return;
+    }
+    const pv = parseMoeda(document.getElementById('m-valor-hf').value);
+    if(pv.erro){ msg.className='msg err'; msg.textContent='Valor inicial do empenho: '+pv.erro; return; }
+    valorInicialHF = pv.vazio ? arredMoeda(rows.reduce((t,r)=>t+r.valorTotal,0)) : pv.valor;
+    if(!(valorInicialHF>0)){ msg.className='msg err'; msg.textContent='Informe um valor inicial do empenho maior que zero.'; return; }
+  }
 
   if(rows.length===0){
     msg.className='msg err'; msg.textContent='Nenhum item válido para salvar — preencha item, valor unitário e quantidade em ao menos uma linha.';
@@ -1439,14 +1540,14 @@ document.getElementById('btn-salvar-multi').addEventListener('click', async ()=>
           const ref = await addDoc(collection(db,'empenhos'), r);
           return { id: ref.id, pregao:r.pregao, vigencia:r.vigencia, numero:r.numero, empresa:r.empresaNome,
             solemp:r.solemp, item:r.item, uf:r.uf, vunit:r.valorUnitario, qtd:r.quantidade,
-            valorTotal:r.valorTotal, saldoQtd:r.saldoQtd, saldoValor:r.saldoValor, celulaId:'', celulaNome:'', status:'ativo' };
+            valorTotal:r.valorTotal, saldoQtd:r.saldoQtd, saldoValor:r.saldoValor, celulaId:'', celulaNome:'', status:'ativo', tipo:r.tipo||'' };
         }));
       }catch(err){ msg.className='msg err'; msg.textContent='Erro ao salvar: '+err.message; return; }
       msg.className='msg ok'; msg.textContent=`${salvos.length} item(ns) salvo(s) no empenho ${numero}.`;
     } else {
       const cel = celulas.find(c=>c.id===celulaId);
       if(!cel){ msg.className='msg err'; msg.textContent='A célula de crédito selecionada não foi encontrada. Atualize a tela e tente novamente.'; return; }
-      const totalEmpenho = arredMoeda(rows.reduce((t,r)=>t+r.valorTotal,0));
+      const totalEmpenho = tipoEmp==='hortifruti' ? valorInicialHF : arredMoeda(rows.reduce((t,r)=>t+r.valorTotal,0));
       msg.className='msg'; msg.textContent='Salvando empenho e atualizando a célula de crédito...';
       try{
         // tudo ou nada: itens do empenho + novo saldo da célula + movimentação, em uma única transação
@@ -1466,16 +1567,26 @@ document.getElementById('btn-salvar-multi').addEventListener('click', async ()=>
             return { id:ref.id, pregao:r.pregao, vigencia:r.vigencia, numero:r.numero, empresa:r.empresaNome,
               solemp:r.solemp, item:r.item, uf:r.uf, vunit:r.valorUnitario, qtd:r.quantidade,
               valorTotal:r.valorTotal, saldoQtd:r.saldoQtd, saldoValor:r.saldoValor,
-              celulaId, celulaNome:celSnap.data().nome, status:'ativo' };
+              celulaId, celulaNome:celSnap.data().nome, status:'ativo', tipo:r.tipo||'' };
           });
           tx.update(celRef, { saldo:novoSaldo });
+          let hfNovo = null;
+          if(tipoEmp==='hortifruti'){
+            const hfRef = doc(collection(db,'empenhosHF'));
+            const hfDados = { numero, empresaNome:empresa, valorInicial:totalEmpenho, totalReforcos:0, totalNFs:0, saldo:totalEmpenho,
+              celulaCreditoId:celulaId, celulaCreditoNome:celSnap.data().nome, nfsRegistradas:{}, reforcosDocs:{},
+              usuarioEmail:usuarioAtual.email||'', userId:usuarioAtual.uid, createdAt:agora };
+            tx.set(hfRef, hfDados);
+            hfNovo = hfFromDoc({ id:hfRef.id, data:()=>hfDados });
+          }
           const movRef = doc(collection(db,'movimentosCredito'));
           const mov = { celulaId, celulaNome:celSnap.data().nome, tipo:'saida', valor:totalEmpenho, saldoApos:novoSaldo,
-            descricao:`Empenho ${numero} — ${empresa}`, empenhoNumero:numero, usuarioEmail:usuarioAtual.email||'', userId:usuarioAtual.uid, createdAt:agora };
+            descricao:`Empenho ${numero} — ${empresa}${tipoEmp==='hortifruti'?' (Hortifrutigranjeiros)':''}`, empenhoNumero:numero, usuarioEmail:usuarioAtual.email||'', userId:usuarioAtual.uid, createdAt:agora };
           tx.set(movRef, mov);
-          return { itensSalvos, novoSaldo, mov:{ id:movRef.id, ...mov } };
+          return { itensSalvos, novoSaldo, mov:{ id:movRef.id, ...mov }, hfNovo };
         });
         salvos = resultado.itensSalvos;
+        if(resultado.hfNovo) empenhosHF.push(resultado.hfNovo);
         cel.saldo = resultado.novoSaldo;
         movimentos.push(movimentoFromDoc({ id:resultado.mov.id, data:()=>resultado.mov }));
         msg.className='msg ok';
@@ -1498,6 +1609,7 @@ document.getElementById('btn-salvar-multi').addEventListener('click', async ()=>
     document.querySelector('#tbl-multi-itens tbody').innerHTML='';
     ['m-pregao','m-vigencia','m-numero','m-empresa','m-solemp'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('m-celula').value='';
+    document.getElementById('m-tipo').value='comum'; document.getElementById('m-valor-hf').value=''; atualizarTipoCadastro();
     addLinhaMulti(); addLinhaMulti(); addLinhaMulti();
     renderSelectCelulaCadastro(); renderCarteira();
   } finally {
@@ -1506,6 +1618,13 @@ document.getElementById('btn-salvar-multi').addEventListener('click', async ()=>
   }
 });
 let salvandoEmpenho = false;
+function atualizarTipoCadastro(){
+  const hf = document.getElementById('m-tipo').value==='hortifruti';
+  document.getElementById('m-valor-hf-wrap').classList.toggle('hidden', !hf);
+  document.getElementById('m-hf-info').classList.toggle('hidden', !hf);
+  document.getElementById('m-celula-label').textContent = hf ? 'Célula de Crédito (obrigatória)' : 'Célula de Crédito (opcional)';
+}
+document.getElementById('m-tipo').addEventListener('change', atualizarTipoCadastro);
 
 
 // ---- Controle de Saldo (carteira por célula de crédito) ----
@@ -1677,11 +1796,11 @@ const STATUS_INFO = {
 };
 // o que cada status permite (consulta é sempre permitida)
 const PERMISSOES_STATUS = {
-  ativo:         { pedido:true,  nf:true,  estornoNF:true,  editar:true,  excluir:true  },
-  processamento: { pedido:false, nf:false, estornoNF:false, editar:false, excluir:false },
-  finalizado:    { pedido:false, nf:false, estornoNF:true,  editar:true,  excluir:true  },
-  a_cancelar:    { pedido:false, nf:false, estornoNF:false, editar:false, excluir:false },
-  cancelado:     { pedido:false, nf:false, estornoNF:false, editar:false, excluir:false }
+  ativo:         { pedido:true,  nf:true,  estornoNF:true,  editar:true,  excluir:true,  reforco:true  },
+  processamento: { pedido:false, nf:false, estornoNF:false, editar:false, excluir:false, reforco:false },
+  finalizado:    { pedido:false, nf:false, estornoNF:true,  editar:true,  excluir:true,  reforco:true  },
+  a_cancelar:    { pedido:false, nf:false, estornoNF:false, editar:false, excluir:false, reforco:false },
+  cancelado:     { pedido:false, nf:false, estornoNF:false, editar:false, excluir:false, reforco:false }
 };
 const DICA_STATUS = {
   processamento:'Mude o status para "Ativo" para voltar a usar o empenho.',
@@ -1693,6 +1812,7 @@ const DICA_STATUS = {
 function statusDeItens(itens){
   if(!itens || itens.length===0) return 'ativo';
   for(const st of ['cancelado','a_cancelar','processamento']){ if(itens.some(e=>e.status===st)) return st; }
+  if(ehHF(itens)){ const h = hfDoNE(itens[0].numero); return (h && h.saldo<=0) ? 'finalizado' : 'ativo'; }
   return itens.every(e=>e.saldoQtd<=0) ? 'finalizado' : 'ativo';
 }
 function statusDoNE(numero){ return statusDeItens(empenhos.filter(e=>e.numero===numero)); }
@@ -1747,10 +1867,110 @@ document.getElementById('saldos-container').addEventListener('change', (ev)=>{
   alterarStatusNE(decodeURIComponent(sel.dataset.ne), sel.value);
 });
 
+// ---- Reforço de empenho de Hortifrutigranjeiros ----
+let reforcoAtual = null, reforcando = false;
+function msgReforco(texto, ok){ const m=document.getElementById('msg-reforco'); m.className = texto ? (ok?'msg ok':'msg err') : ''; m.textContent = texto||''; }
+function fecharReforco(){ document.getElementById('reforco-modal').classList.add('hidden'); reforcoAtual = null; }
+document.getElementById('btn-fechar-reforco').addEventListener('click', fecharReforco);
+window.abrirReforco = function(ne){
+  if(bloquearRestrito()) return;
+  const h = hfDoNE(ne);
+  if(!h || !ehHFNumero(ne)){ alert('Este empenho não é de Hortifrutigranjeiros.'); return; }
+  { const c = checarOp(ne,'reforco'); if(!c.ok){ alert(c.msg); return; } }
+  reforcoAtual = { ne, hfId:h.id };
+  document.getElementById('rf-titulo').textContent = `Reforçar empenho ${ne}`;
+  const cel = h.celulaId ? celulas.find(c=>c.id===h.celulaId) : null;
+  document.getElementById('rf-info').textContent = `Saldo disponível do empenho: ${fmtMoney(h.saldo)}. ` +
+    (h.celulaId ? `O valor do reforço será descontado da célula de crédito "${cel?cel.nome:h.celulaNome}"${cel?` (saldo atual ${fmtMoney(cel.saldo)})`:''}.` : 'Este empenho não está vinculado a uma célula de crédito: o reforço apenas acrescenta saldo ao empenho.');
+  document.getElementById('rf-valor').value=''; document.getElementById('rf-doc').value='';
+  document.getElementById('rf-data').value = isoHoje();
+  msgReforco('');
+  document.getElementById('reforco-modal').classList.remove('hidden');
+};
+document.getElementById('btn-confirmar-reforco').addEventListener('click', async ()=>{
+  if(bloquearRestrito()) return;
+  if(reforcando || !reforcoAtual) return;
+  const { ne, hfId } = reforcoAtual;
+  const h = empenhosHF.find(x=>x.id===hfId); if(!h) return;
+  { const c = checarOp(ne,'reforco'); if(!c.ok){ msgReforco(c.msg, false); return; } }
+  const pv = parseMoeda(document.getElementById('rf-valor').value);
+  if(pv.vazio){ msgReforco('Informe o valor do reforço.', false); return; }
+  if(pv.erro){ msgReforco(pv.erro, false); return; }
+  const valor = pv.valor;
+  if(!(valor>0)){ msgReforco('O valor do reforço deve ser maior que zero.', false); return; }
+  const documento = document.getElementById('rf-doc').value.trim();
+  const data = document.getElementById('rf-data').value || isoHoje();
+  const chaveDoc = documento ? chaveRegistro(documento) : '';
+  if(chaveDoc && reforcosHF.some(r=>r.hfId===hfId && chaveRegistro(r.documento)===chaveDoc)){
+    msgReforco(`Já existe um reforço com o documento "${documento}" neste empenho.`, false); return;
+  }
+  const celId = h.celulaId;
+  const cel = celId ? celulas.find(c=>c.id===celId) : null;
+  if(celId && cel && arredMoeda(cel.saldo - valor) < 0){
+    msgReforco(`Saldo insuficiente na célula "${cel.nome}": disponível ${fmtMoney(cel.saldo)}, reforço de ${fmtMoney(valor)}.`, false); return;
+  }
+  if(!confirm(`Confirmar reforço de ${fmtMoney(valor)} no empenho ${ne}?`)) return;
+  reforcando = true;
+  const btn = document.getElementById('btn-confirmar-reforco'); btn.disabled = true;
+  msgReforco('Lançando o reforço...', true);
+  try{
+    const r = await runTransaction(db, async (tx)=>{
+      const hfRef = doc(db,'empenhosHF',hfId);
+      const sn = await tx.get(hfRef);
+      if(!sn.exists()) throw new Error('Controle de saldo do empenho não encontrado.');
+      let celRef = null, celSnap = null;
+      if(celId){
+        celRef = doc(db,'celulasCredito',celId);
+        celSnap = await tx.get(celRef);
+        if(!celSnap.exists()) throw new Error('Célula de crédito vinculada não encontrada.');
+      }
+      const d = sn.data();
+      const docs = { ...(d.reforcosDocs||{}) };
+      if(chaveDoc && docs[chaveDoc]) throw new Error('REFORCO_DUPLICADO');
+      if(chaveDoc) docs[chaveDoc] = true;
+      const agora = Date.now();
+      const novoSaldoHF = arredMoeda((Number(d.saldo)||0) + valor);
+      const totalReforcos = arredMoeda((Number(d.totalReforcos)||0) + valor);
+      let novoSaldoCel = null, mov = null;
+      if(celRef){
+        novoSaldoCel = arredMoeda((Number(celSnap.data().saldo)||0) - valor);
+        if(novoSaldoCel < 0){ const e = new Error('SALDO_CELULA'); e.saldoAtual = Number(celSnap.data().saldo)||0; throw e; }
+      }
+      tx.update(hfRef, { saldo:novoSaldoHF, totalReforcos, reforcosDocs:docs });
+      if(celRef){
+        tx.update(celRef, { saldo:novoSaldoCel });
+        const movRef = doc(collection(db,'movimentosCredito'));
+        mov = { celulaId:celId, celulaNome:celSnap.data().nome, tipo:'saida', valor, saldoApos:novoSaldoCel,
+          descricao:`Reforço do empenho ${ne} (Hortifrutigranjeiros)${documento?' — '+documento:''}`, empenhoNumero:ne,
+          usuarioEmail:usuarioAtual.email||'', userId:usuarioAtual.uid, createdAt:agora };
+        tx.set(movRef, mov);
+        mov = { id:movRef.id, ...mov };
+      }
+      const rfRef = doc(collection(db,'reforcosHF'));
+      const rf = { hfId, numero:ne, valor, documento, data, saldoEmpenhoApos:novoSaldoHF,
+        usuarioEmail:usuarioAtual.email||'', userId:usuarioAtual.uid, createdAt:agora };
+      tx.set(rfRef, rf);
+      return { novoSaldoHF, totalReforcos, docs, novoSaldoCel, mov, rf:{ id:rfRef.id, ...rf } };
+    });
+    h.saldo = r.novoSaldoHF; h.totalReforcos = r.totalReforcos; h.reforcosDocs = r.docs;
+    reforcosHF.push(reforcoFromDoc({ id:r.rf.id, data:()=>r.rf }));
+    if(r.mov){ if(cel) cel.saldo = r.novoSaldoCel; movimentos.push(movimentoFromDoc({ id:r.mov.id, data:()=>r.mov })); }
+  }catch(err){
+    if(err.message==='REFORCO_DUPLICADO') msgReforco(`Já existe um reforço com o documento "${documento}" neste empenho. Nada foi alterado.`, false);
+    else if(err.message==='SALDO_CELULA'){ if(cel) cel.saldo = err.saldoAtual; msgReforco(`Saldo insuficiente na célula de crédito: disponível ${fmtMoney(err.saldoAtual)}. Nada foi alterado.`, false); }
+    else msgReforco('Erro ao lançar o reforço: '+err.message+'. Nada foi alterado.', false);
+    return;
+  }finally{ reforcando = false; btn.disabled = false; }
+  fecharReforco();
+  await sincronizarStatusNE(ne);
+  renderSaldos(); renderSelectNE(); renderCarteira(); renderSelectCelulaCadastro();
+  alert(`Reforço de ${fmtMoney(valor)} lançado no empenho ${ne}. Novo saldo disponível: ${fmtMoney(h.saldo)}.`);
+});
+
 // ---- Cancelamento definitivo (devolve o saldo restante à célula de crédito) ----
 let cancelamentoAtual = null;
 let cancelando = false;
-function saldoRestanteNE(itens){ return arredMoeda(itens.reduce((t,e)=>t+(Number(e.saldoValor)||0),0)); }
+function saldoRestanteNE(itens){ return (itens.length && ehHF(itens)) ? saldoNE(itens[0].numero, itens) : arredMoeda(itens.reduce((t,e)=>t+(Number(e.saldoValor)||0),0)); }
 function msgCancel(texto, ok){ const m=document.getElementById('msg-cancel'); m.className = texto ? (ok?'msg ok':'msg err') : ''; m.textContent = texto||''; }
 function fecharCancelamento(){ document.getElementById('cancel-modal').classList.add('hidden'); cancelamentoAtual = null; }
 document.getElementById('btn-fechar-cancel').addEventListener('click', fecharCancelamento);
@@ -1809,7 +2029,16 @@ document.getElementById('btn-confirmar-cancel').addEventListener('click', async 
       for(const id of ids){ snaps.push(await tx.get(doc(db,'empenhos',id))); }
       if(snaps.some(sn=>!sn.exists())) throw new Error('Algum item do empenho não foi encontrado. Atualize a tela e tente novamente.');
       if(snaps.some(sn=>sn.data().status==='cancelado')){ const e=new Error('JA_CANCELADO'); throw e; }
-      const restante = arredMoeda(snaps.reduce((t,sn)=>t+(Number(sn.data().saldoValor)||0),0));
+      const hfC = ehHF(itens) ? hfDoNE(ne) : null;
+      let hfRefC = null, restante;
+      if(hfC){
+        hfRefC = doc(db,'empenhosHF',hfC.id);
+        const hsn = await tx.get(hfRefC);
+        if(!hsn.exists()) throw new Error('Controle de saldo do empenho de Hortifrutigranjeiros não encontrado.');
+        restante = arredMoeda(Number(hsn.data().saldo)||0);
+      } else {
+        restante = arredMoeda(snaps.reduce((t,sn)=>t+(Number(sn.data().saldoValor)||0),0));
+      }
       let celRef=null, celSnap=null;
       if(restante>0){
         if(!destinoId) throw new Error('Selecione a célula de crédito de destino.');
@@ -1820,14 +2049,15 @@ document.getElementById('btn-confirmar-cancel').addEventListener('click', async 
       const agora = Date.now();
       const quem = usuarioAtual.email || '';
       const destinoNome = celSnap ? celSnap.data().nome : '';
-      const estados = snaps.map(sn=>{
+      const estados = snaps.map((sn,idx)=>{
         const d = sn.data();
         const dados = { status:'cancelado', saldoQtd:0, saldoValor:0,
-          saldoDevolvidoQtd:Number(d.saldoQtd)||0, valorDevolvido:Number(d.saldoValor)||0,
+          saldoDevolvidoQtd:Number(d.saldoQtd)||0, valorDevolvido: hfC ? (idx===0 ? restante : 0) : (Number(d.saldoValor)||0),
           canceladoEm:agora, canceladoPor:quem, celulaDevolucaoId:destinoId||'', celulaDevolucaoNome:destinoNome };
         tx.update(doc(db,'empenhos',sn.id), dados);
         return { id:sn.id, dados };
       });
+      if(hfRefC) tx.update(hfRefC, { saldo:0, valorDevolvido:restante, canceladoEm:agora });
       let novoSaldo = null, mov = null;
       if(restante>0){
         novoSaldo = arredMoeda((Number(celSnap.data().saldo)||0) + restante);
@@ -1846,6 +2076,7 @@ document.getElementById('btn-confirmar-cancel').addEventListener('click', async 
       if(e) Object.assign(e, { status:'cancelado', saldoQtd:0, saldoValor:0, valorDevolvido:dados.valorDevolvido,
         canceladoEm:dados.canceladoEm, canceladoPor:dados.canceladoPor, celulaDevolucaoNome:dados.celulaDevolucaoNome });
     });
+    { const hfC2 = hfDoNE(ne); if(hfC2 && ehHF(itens)) hfC2.saldo = 0; }
     if(r.mov){
       const c = celulas.find(x=>x.id===destinoId); if(c) c.saldo = r.novoSaldo;
       movimentos.push(movimentoFromDoc({ id:r.mov.id, data:()=>r.mov }));
@@ -1882,10 +2113,38 @@ function renderCardNE(ne, itens){
   const devolvido = st==='cancelado' ? itens.reduce((t,e)=>t+(e.valorDevolvido||0),0) : 0;
   const infoCancel = st==='cancelado'
     ? `<span><b>Saldo devolvido:</b> ${fmtMoney(arredMoeda(devolvido))}${first.celulaDevolucaoNome?` → célula "${first.celulaDevolucaoNome}"`:''}${first.canceladoEm?` em ${new Date(first.canceladoEm).toLocaleDateString('pt-BR')}`:''}${first.canceladoPor?` por ${first.canceladoPor}`:''}</span>` : '';
-  const totalValor = itens.reduce((s,e)=>s+e.valorTotal,0);
-  const totalSaldo = itens.reduce((s,e)=>s+e.saldoValor,0);
+  const totalValor = valorTotalNE(ne, itens);
+  const totalSaldo = saldoNE(ne, itens);
+  const isHF = ehHF(itens);
+  const hf = isHF ? hfDoNE(ne) : null;
+  let blocoHF = '';
+  if(isHF){
+    const refs = hf ? reforcosHF.filter(r=>r.hfId===hf.id).sort((a,b)=>(a.createdAt-b.createdAt)) : [];
+    const podeReforcar = perm.reforco && !!hf;
+    blocoHF = hf ? `
+    <div class="hf-resumo">
+      <div><span>Valor inicial</span><b>${fmtMoney(hf.valorInicial)}</b></div>
+      <div><span>Total reforçado</span><b>${fmtMoney(hf.totalReforcos)}</b></div>
+      <div><span>Valor total atualizado</span><b>${fmtMoney(arredMoeda(hf.valorInicial+hf.totalReforcos))}</b></div>
+      <div><span>Utilizado em notas fiscais</span><b>${fmtMoney(hf.totalNFs)}</b></div>
+      <div class="destaque"><span>Saldo disponível</span><b>${fmtMoney(hf.saldo)}</b></div>
+    </div>
+    <div class="hf-reforcos">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap">
+        <h3>Histórico de reforços (${refs.length})</h3>
+        <button type="button" class="btn-reforco primary" style="padding:5px 12px; font-size:.78rem" onclick="abrirReforco('${ne.replace(/'/g,"\\'")}')" ${podeReforcar?'':`disabled title="${dicaBloq}"`}>➕ Reforçar empenho</button>
+      </div>
+      ${refs.length ? `<div class="tablewrap" style="margin-top:6px"><table><thead><tr><th>Data</th><th>Documento</th><th>Valor</th><th>Saldo após</th><th>Responsável</th></tr></thead><tbody>${refs.map(r=>`<tr><td>${fmtDataBR(r.data)}</td><td>${r.documento||'—'}</td><td>${fmtMoney(r.valor)}</td><td>${fmtMoney(r.saldoApos)}</td><td class="resp-acao">${r.usuarioEmail||'—'}</td></tr>`).join('')}</tbody></table></div>` : `<div style="color:var(--text-2)">Nenhum reforço lançado.</div>`}
+    </div>` : `<div class="hf-reforcos" style="color:var(--err)">Não foi possível carregar o controle de saldo deste empenho de Hortifrutigranjeiros. Atualize a página.</div>`;
+  }
 
   const linhas = itens.map(e=>{
+    if(isHF) return `<tr>
+      <td>${e.item}</td><td>${e.uf||'-'}</td>
+      <td>${fmtMoney(e.vunit)}</td><td>${fmtQtd(e.qtd)}</td><td>${fmtMoney(e.valorTotal)}</td>
+      <td style="white-space:nowrap"><button type="button" onclick="abrirEdicaoItem('${e.id}')" title="Editar este item" style="padding:4px 9px" ${attrEditar}>✏️</button>
+        <button class="danger" onclick="removerEmpenho('${e.id}')" ${attrExcluir}>Excluir</button></td>
+    </tr>`;
     let statusHtml;
     if(e.saldoQtd<=0) statusHtml = `<span class="pill off">Esgotado</span>`;
     else if(e.saldoQtd < e.qtd*0.2) statusHtml = `<span class="pill warn">Baixo</span>`;
@@ -1905,6 +2164,7 @@ function renderCardNE(ne, itens){
     <div class="grupo-header">
       <div class="info">
         <span><b>NE:</b> ${ne}</span>
+        ${isHF?'<span class="hf-badge">Hortifrutigranjeiro</span>':''}
         <span><b>Status:</b> <span class="st-badge st-${st}">${STATUS_INFO[st].nome}</span> ${selStatus}</span>
         ${infoCancel}
         <span><b>Pregão:</b> ${first.pregao||'-'}</span>
@@ -1922,11 +2182,13 @@ function renderCardNE(ne, itens){
         <button class="danger" onclick="removerEmpenhoCompleto('${ne.replace(/'/g,"\\'")}')" title="${perm.excluir?'Excluir este empenho e todos os seus itens':dicaBloq}" ${attrExcluir}>🗑️ Excluir empenho</button>
       </div>
     </div>
+    ${blocoHF}
+    ${isHF?'<div class="hf-itens-tit">Itens cadastrados — apenas para consulta e histórico (não controlam o saldo nem as notas fiscais)</div>':''}
     <div class="tablewrap">
       <table>
         <thead><tr>
-          <th>Item</th><th>UF</th><th>Vlr. unit.</th><th>Qtd.</th><th>Vlr. total</th>
-          <th>Saldo qtd.</th><th>Saldo R$</th><th>Status</th><th></th>
+          ${isHF ? '<th>Item</th><th>UF</th><th>Vlr. unit.</th><th>Qtd.</th><th>Vlr. total</th><th></th>'
+                 : '<th>Item</th><th>UF</th><th>Vlr. unit.</th><th>Qtd.</th><th>Vlr. total</th><th>Saldo qtd.</th><th>Saldo R$</th><th>Status</th><th></th>'}
         </tr></thead>
         <tbody>${linhas}</tbody>
       </table>
@@ -1967,8 +2229,8 @@ function renderSaldos(){
     const grupoNEs = porEmpresa[nomeEmpresa];
     const numerosNE = Object.keys(grupoNEs);
     const todosItens = numerosNE.flatMap(ne=>grupoNEs[ne]);
-    const totalValorEmpresa = todosItens.reduce((s,e)=>s+e.valorTotal,0);
-    const totalSaldoEmpresa = todosItens.reduce((s,e)=>s+e.saldoValor,0);
+    const totalValorEmpresa = numerosNE.reduce((s,ne)=>s+valorTotalNE(ne, grupoNEs[ne]),0);
+    const totalSaldoEmpresa = numerosNE.reduce((s,ne)=>s+saldoNE(ne, grupoNEs[ne]),0);
     const containerId = 'empresa-grupo-'+idxEmpresa;
     const abrirPorBusca = q.length>0 || abertas.has(nomeEmpresa);
 
@@ -1996,6 +2258,9 @@ window.removerEmpenho = async function(id){
   if(bloquearRestrito()) return;
   const it = empenhos.find(e=>e.id===id);
   if(it){ const c = checarOp(it.numero,'excluir'); if(!c.ok){ alert(c.msg); return; } }
+  if(it && it.tipo==='hortifruti' && empenhos.filter(e=>e.numero===it.numero).length===1){
+    alert('Este é o último item do empenho de Hortifrutigranjeiros. Para remover o empenho por completo, use "Excluir empenho".'); return;
+  }
   const avisoCel = it && it.celulaId ? `\n\nATENÇÃO: este empenho está vinculado à célula de crédito "${celulaNomeDe(it)}". O valor já deduzido NÃO será devolvido automaticamente ao saldo da célula.` : '';
   if(!confirm('Excluir este item de empenho? O histórico de notas fiscais vinculado a ele será mantido, mas perderá a referência.'+avisoCel)) return;
   try{ await deleteDoc(doc(db,'empenhos',id)); }
@@ -2012,9 +2277,15 @@ window.removerEmpenhoCompleto = async function(ne){
   const vinc = itens.find(e=>e.celulaId);
   const avisoCel = vinc ? `\n\nATENÇÃO: este empenho está vinculado à célula de crédito "${celulaNomeDe(vinc)}". O valor já deduzido NÃO será devolvido automaticamente ao saldo da célula.` : '';
   if(!confirm(`Excluir o empenho ${ne} por completo? Isso vai apagar todos os ${itens.length} item(ns) dele e atualizar os saldos. O histórico de notas fiscais vinculado será mantido, mas perderá a referência. Essa ação não pode ser desfeita.${avisoCel}`)) return;
+  const hfExcl = ehHF(itens) ? hfDoNE(ne) : null;
   try{
+    if(hfExcl){
+      await Promise.all(reforcosHF.filter(r=>r.hfId===hfExcl.id).map(r=>deleteDoc(doc(db,'reforcosHF',r.id))));
+      await deleteDoc(doc(db,'empenhosHF',hfExcl.id));
+    }
     await Promise.all(itens.map(e=>deleteDoc(doc(db,'empenhos',e.id))));
   }catch(err){ alert('Erro ao excluir o empenho: '+err.message); return; }
+  if(hfExcl){ empenhosHF = empenhosHF.filter(h=>h.id!==hfExcl.id); reforcosHF = reforcosHF.filter(r=>r.hfId!==hfExcl.id); }
   empenhos = empenhos.filter(e=>e.numero!==ne);
   renderSaldos();
 };
@@ -2077,7 +2348,7 @@ window.abrirEdicaoItem = function(id){
   const e = empenhos.find(x=>x.id===id);
   if(!e) return;
   { const c = checarOp(e.numero,'editar'); if(!c.ok){ alert(c.msg); return; } }
-  const nfs = notasFiscais.filter(n=>n.empenhoId===id);
+  const nfs = notasFiscais.filter(n=>n.empenhoId===id && !n.hf);
   const consumido = arredQtd(e.qtd - e.saldoQtd);
   const temBaixa = nfs.length>0 || consumido>0;
   edicaoAtual = { modo:'item', id, consumido, temBaixa };
@@ -2153,7 +2424,13 @@ async function salvarEdicaoNE(){
   const ops = itens.map(e=>({ col:'empenhos', id:e.id,
     dados:{ numero, pregao, vigencia, solemp, empresaNome:empresa } }));
   if(mudouNumero) nfs.forEach(n=>ops.push({ col:'notasFiscais', id:n.id, dados:{ numeroEmpenho:numero } }));
+  const hfEd = ehHF(itens) ? hfDoNE(numeroOriginal) : null;
+  if(hfEd){
+    ops.push({ col:'empenhosHF', id:hfEd.id, dados:{ numero, empresaNome:empresa } });
+    if(mudouNumero) reforcosHF.filter(r=>r.hfId===hfEd.id).forEach(r=>ops.push({ col:'reforcosHF', id:r.id, dados:{ numero } }));
+  }
   await gravarEmLotes(ops);
+  if(hfEd){ hfEd.numero = numero; hfEd.empresa = empresa; if(mudouNumero) reforcosHF.filter(r=>r.hfId===hfEd.id).forEach(r=>{ r.numero = numero; }); }
 
   itens.forEach(e=>{ e.numero=numero; e.pregao=pregao; e.vigencia=vigencia||''; e.solemp=solemp; e.empresa=empresa; });
   if(mudouNumero) nfs.forEach(n=>{ n.numeroEmpenho=numero; });
@@ -2190,7 +2467,7 @@ async function salvarEdicaoItem(){
   const novoValorTotal = arredMoeda(novaQtd*vunit);
   const novoSaldoValor = saldoValorDe(novoSaldoQtd, vunit);
 
-  const nfs = notasFiscais.filter(n=>n.empenhoId===id)
+  const nfs = notasFiscais.filter(n=>n.empenhoId===id && !n.hf)
     .sort((a,b)=> (a.createdAt-b.createdAt) || String(a.data).localeCompare(String(b.data)) || String(a.id).localeCompare(String(b.id)));
   const mudouQtd = novaQtd!==e.qtd;
   const mudouNome = item!==e.item;
@@ -2243,10 +2520,11 @@ function renderSelectNE(){
       nes.map(ne=>{
         const st = statusDoNE(ne);
         const livre = PERMISSOES_STATUS[st].nf;
-        return `<option value="${ne}" ${livre?'':'disabled'}>${ne} — ${empresaDoNE(ne)}${livre?'':' ['+STATUS_INFO[st].nome+' — indisponível]'}</option>`;
+        return `<option value="${ne}" ${livre?'':'disabled'}>${ne} — ${empresaDoNE(ne)}${ehHFNumero(ne)?' · Hortifrutigranjeiro':''}${livre?'':' ['+STATUS_INFO[st].nome+' — indisponível]'}</option>`;
       }).join('');
   }
   document.getElementById('nf-itens-wrap').classList.add('hidden');
+  document.getElementById('nf-hf-wrap').classList.add('hidden');
   document.querySelector('#tbl-nf-itens tbody').innerHTML='';
 }
 
@@ -2258,7 +2536,20 @@ function renderItensDoEmpenhoNaNF(){
   const tbody = document.querySelector('#tbl-nf-itens tbody');
   if(!ne){ wrap.classList.add('hidden'); tbody.innerHTML=''; return; }
   const itens = empenhos.filter(e=>e.numero===ne);
+  const hfWrap = document.getElementById('nf-hf-wrap');
+  hfWrap.classList.add('hidden');
+  document.getElementById('nf-data-label').textContent = 'Data de recebimento';
   if(itens.length===0 || !checarOp(ne,'nf').ok){ wrap.classList.add('hidden'); tbody.innerHTML=''; return; }
+  if(ehHF(itens)){
+    const h = hfDoNE(ne);
+    wrap.classList.add('hidden'); tbody.innerHTML='';
+    document.getElementById('nf-data-label').textContent = 'Data de emissão';
+    document.getElementById('nf-hf-empresa').value = empresaDoNE(ne) || '';
+    document.getElementById('nf-valor-hf').value = '';
+    document.getElementById('nf-hf-info').textContent = h ? `Saldo disponível do empenho: ${fmtMoney(h.saldo)}. Informe apenas o valor total da nota fiscal.` : 'Controle de saldo do empenho não encontrado. Atualize a página.';
+    hfWrap.classList.remove('hidden');
+    return;
+  }
   tbody.innerHTML = itens.map(e=>`
     <tr data-id="${e.id}">
       <td>${e.item}</td><td>${e.uf||'-'}</td><td>${fmtMoney(e.vunit)}</td>
@@ -2278,6 +2569,7 @@ document.getElementById('btn-baixar').addEventListener('click', async ()=>{
   if(!numeroNF){ msg.className='msg err'; msg.textContent='Informe o número da nota fiscal.'; return; }
   if(!ne){ msg.className='msg err'; msg.textContent='Selecione o empenho ao qual esta nota está vinculada.'; return; }
   { const c = checarOp(ne,'nf'); if(!c.ok){ msg.className='msg err'; msg.textContent=c.msg; return; } }
+  if(ehHFNumero(ne)){ await registrarNFHF(ne, numeroNF, data, msg); return; }
 
   const linhas = [...document.querySelectorAll('#tbl-nf-itens tbody tr')];
   const paraBaixar = [];
@@ -2633,8 +2925,8 @@ function renderHistorico(){
       const detailId = 'nf-det-'+(contadorDetalhe++);
       const linhasItens = g.itens.map(n=>`
         <tr>
-          <td>${n.item}</td><td>${fmtQtd(n.qtd)}</td><td>${fmtMoney(n.valorBaixado)}</td>
-          <td>${fmtQtd(n.saldoAposQtd)} un. / ${fmtMoney(n.saldoAposValor)}</td>
+          <td>${n.item}</td><td>${n.hf?'—':fmtQtd(n.qtd)}</td><td>${fmtMoney(n.valorBaixado)}</td>
+          <td>${n.hf?`${fmtMoney(n.saldoAposValor)} (saldo do empenho)`:`${fmtQtd(n.saldoAposQtd)} un. / ${fmtMoney(n.saldoAposValor)}`}</td>
           <td><button class="danger" onclick="removerItemNF('${n.id}')">Excluir item</button></td>
         </tr>`).join('');
       return `
@@ -2684,10 +2976,110 @@ function renderHistorico(){
 }
 document.getElementById('busca-historico').addEventListener('input', renderHistorico);
 
+// ---- Hortifrutigranjeiros: registro e estorno de NF pelo valor total ----
+let registrandoNFHF = false;
+async function registrarNFHF(ne, numeroNF, data, msg){
+  const h = hfDoNE(ne);
+  if(!h){ msg.className='msg err'; msg.textContent='Controle de saldo do empenho de Hortifrutigranjeiros não encontrado. Atualize a página.'; return; }
+  const pv = parseMoeda(document.getElementById('nf-valor-hf').value);
+  if(pv.vazio){ msg.className='msg err'; msg.textContent='Informe o valor total da nota fiscal.'; return; }
+  if(pv.erro){ msg.className='msg err'; msg.textContent='Valor total da nota fiscal: '+pv.erro; return; }
+  const valor = pv.valor;
+  if(!(valor>0)){ msg.className='msg err'; msg.textContent='O valor total da nota fiscal deve ser maior que zero.'; return; }
+  if(arredMoeda(h.saldo - valor) < 0){ msg.className='msg err'; msg.textContent=`Valor da nota fiscal (${fmtMoney(valor)}) maior que o saldo disponível do empenho (${fmtMoney(h.saldo)}).`; return; }
+  const chave = chaveRegistro(numeroNF);
+  if(notasFiscais.some(n=>n.numeroEmpenho===ne && chaveRegistro(n.numeroNF)===chave)){
+    msg.className='msg err'; msg.textContent=`A nota fiscal ${numeroNF} já foi registrada neste empenho.`; return;
+  }
+  const item0 = empenhos.find(e=>e.numero===ne);
+  if(!item0){ msg.className='msg err'; msg.textContent='Empenho sem itens cadastrados.'; return; }
+  if(registrandoNFHF) return;
+  registrandoNFHF = true;
+  const btn = document.getElementById('btn-baixar'); btn.disabled = true;
+  msg.className='msg'; msg.textContent='Registrando...';
+  try{
+    const r = await runTransaction(db, async (tx)=>{
+      const hfRef = doc(db,'empenhosHF',h.id);
+      const sn = await tx.get(hfRef);
+      if(!sn.exists()) throw new Error('Controle de saldo do empenho não encontrado.');
+      const d = sn.data();
+      const mapa = { ...(d.nfsRegistradas||{}) };
+      if(mapa[chave]) throw new Error('NF_DUPLICADA');
+      const saldoAtual = Number(d.saldo)||0;
+      const novoSaldo = arredMoeda(saldoAtual - valor);
+      if(novoSaldo < 0){ const e = new Error('SALDO_INSUFICIENTE'); e.saldoAtual = saldoAtual; throw e; }
+      mapa[chave] = true;
+      const totalNFs = arredMoeda((Number(d.totalNFs)||0) + valor);
+      tx.update(hfRef, { saldo:novoSaldo, totalNFs, nfsRegistradas:mapa });
+      const nfRef = doc(collection(db,'notasFiscais'));
+      const criadoEm = Date.now();
+      const nfData = { numeroNF, data, empenhoId:item0.id, numeroEmpenho:ne, item:'Valor total da NF (Hortifrutigranjeiros)',
+        quantidade:0, valorBaixado:valor, saldoQtdApos:0, saldoValorApos:novoSaldo, tipoNF:'hortifruti', hfId:h.id,
+        userId: uidDono(), ...responsavelAcao(), createdAt: criadoEm };
+      tx.set(nfRef, nfData);
+      return { id:nfRef.id, nfData, novoSaldo, totalNFs, mapa };
+    });
+    h.saldo = r.novoSaldo; h.totalNFs = r.totalNFs; h.nfsRegistradas = r.mapa;
+    notasFiscais.push(nfFromDoc({ id:r.id, data:()=>r.nfData }));
+    await registrarAuditoria('Registrou nota fiscal', `NF ${numeroNF} · NE ${ne} (Hortifrutigranjeiros) · ${fmtMoney(valor)}`);
+  }catch(err){
+    msg.className='msg err';
+    if(err.message==='NF_DUPLICADA') msg.textContent = `A nota fiscal ${numeroNF} já foi registrada neste empenho. Nada foi alterado.`;
+    else if(err.message==='SALDO_INSUFICIENTE'){ h.saldo = err.saldoAtual; msg.textContent = `Saldo insuficiente: o empenho tem ${fmtMoney(err.saldoAtual)} disponíveis. Nada foi alterado.`; }
+    else msg.textContent = 'Erro ao registrar: '+err.message+'. Nada foi alterado.';
+    return;
+  }finally{ registrandoNFHF = false; btn.disabled = false; }
+  await sincronizarStatusNE(ne);
+  const finalizou = statusDoNE(ne)==='finalizado';
+  msg.className='msg ok';
+  msg.textContent = `Nota fiscal ${numeroNF} registrada: ${fmtMoney(valor)} descontado(s) do empenho ${ne}. Saldo disponível: ${fmtMoney(h.saldo)}.` +
+    (finalizou ? ' O saldo chegou a zero: status alterado automaticamente para Finalizado.' : '');
+  document.getElementById('nf-numero').value='';
+  document.getElementById('nf-ne').value='';
+  document.getElementById('nf-valor-hf').value='';
+  document.getElementById('nf-hf-wrap').classList.add('hidden');
+  renderSelectNE();
+}
+
+async function estornarNFHF(lista){
+  const hfId = lista[0].hfId;
+  const h = empenhosHF.find(x=>x.id===hfId);
+  const total = arredMoeda(lista.reduce((t,n)=>t+(n.valorBaixado||0),0));
+  if(!h){
+    await Promise.all(lista.map(n=>deleteDoc(doc(db,'notasFiscais',n.id))));
+    return null;
+  }
+  const r = await runTransaction(db, async (tx)=>{
+    const hfRef = doc(db,'empenhosHF',hfId);
+    const sn = await tx.get(hfRef);
+    if(!sn.exists()) throw new Error('Controle de saldo do empenho não encontrado.');
+    const d = sn.data();
+    const mapa = { ...(d.nfsRegistradas||{}) };
+    lista.forEach(n=>{ delete mapa[chaveRegistro(n.numeroNF)]; });
+    const novoSaldo = arredMoeda((Number(d.saldo)||0) + total);
+    const totalNFs = Math.max(0, arredMoeda((Number(d.totalNFs)||0) - total));
+    tx.update(hfRef, { saldo:novoSaldo, totalNFs, nfsRegistradas:mapa });
+    lista.forEach(n=>tx.delete(doc(db,'notasFiscais',n.id)));
+    return { novoSaldo, totalNFs, mapa };
+  });
+  h.saldo = r.novoSaldo; h.totalNFs = r.totalNFs; h.nfsRegistradas = r.mapa;
+  return h;
+}
+
 window.removerItemNF = async function(id){
   if(bloquearRestrito()) return;
   const nf = notasFiscais.find(n=>n.id===id);
   if(!nf) return;
+  if(nf.hf){
+    const eh = empenhos.find(x=>x.numero===nf.numeroEmpenho);
+    if(eh){ const c = checarOp(eh.numero,'estornoNF'); if(!c.ok){ alert(c.msg); return; } }
+    if(!confirm(`Excluir a nota fiscal ${nf.numeroNF}? O valor de ${fmtMoney(nf.valorBaixado)} volta para o saldo do empenho.`)) return;
+    try{ await estornarNFHF([nf]); }catch(err){ alert('Erro ao excluir: '+err.message); return; }
+    notasFiscais = notasFiscais.filter(n=>n.id!==id);
+    await sincronizarStatusNE(nf.numeroEmpenho);
+    renderHistorico();
+    return;
+  }
   if(!confirm('Excluir este item da nota fiscal? O saldo do empenho correspondente será devolvido.')) return;
   const e = empenhos.find(x=>x.id===nf.empenhoId);
   if(e){ const c = checarOp(e.numero,'estornoNF'); if(!c.ok){ alert(c.msg); return; } }
@@ -2709,6 +3101,15 @@ window.removerNF = async function(numeroNF, numeroEmpenho){
   if(bloquearRestrito()) return;
   if(!confirm(`Excluir a nota fiscal ${numeroNF} inteira? O saldo de todos os itens dela será devolvido ao empenho.`)) return;
   const doGrupo = notasFiscais.filter(n=>n.numeroNF===numeroNF && n.numeroEmpenho===numeroEmpenho);
+  if(doGrupo.length && doGrupo.every(n=>n.hf)){
+    const eh = empenhos.find(x=>x.numero===numeroEmpenho);
+    if(eh){ const c = checarOp(eh.numero,'estornoNF'); if(!c.ok){ alert(c.msg); return; } }
+    try{ await estornarNFHF(doGrupo); }catch(err){ alert('Erro ao excluir: '+err.message); return; }
+    notasFiscais = notasFiscais.filter(n=>!(n.numeroNF===numeroNF && n.numeroEmpenho===numeroEmpenho));
+    await sincronizarStatusNE(numeroEmpenho);
+    renderHistorico();
+    return;
+  }
 
   // soma quantidades a devolver por empenho
   const porEmpenho = {};
