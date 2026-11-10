@@ -661,7 +661,7 @@ body.perfil-restrito .btn-reforco{display:none !important}
       <div class="grid">
         <div class="field"><label>Produto</label><input id="pm-produto" placeholder="Ex: Tomate" autocomplete="off"></div>
         <div class="field"><label>Unidade de fornecimento</label><input id="pm-unidade" placeholder="Ex: KG" autocomplete="off"></div>
-        <div class="field"><label>Preço unitário (R$)</label><input id="pm-preco" inputmode="decimal" placeholder="Ex: 6,90" autocomplete="off"></div>
+        <div class="field"><label>Preço unitário (R$)</label><input id="pm-preco" inputmode="decimal" placeholder="Ex: 6,8925 (até 4 casas)" autocomplete="off"></div>
       </div>
       <div class="actions">
         <button class="primary" id="btn-pm-salvar" type="button">Adicionar à tabela do mês</button>
@@ -1700,6 +1700,20 @@ function parseMoeda(txt){
   }
   if(!/^\d+(,\d{1,2})?$/.test(x)) return {erro:'Valor inválido. Use números e vírgula, com até 2 casas decimais (ex: 1500,00).'};
   return { valor: arredMoeda(parseFloat(x.replace(',','.'))) };
+}
+// preço unitário da Tabela Mensal: até 4 casas decimais
+function arredPreco(n){ return arred(n,4); }
+function fmtPreco(v){ return (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:4}); }
+function parsePreco(txt){
+  const t = String(txt==null?'':txt).trim().replace(/\s/g,'').replace(/^R\$/i,'');
+  if(t==='') return {vazio:true};
+  let x = t;
+  if(x.includes('.')){
+    if(!x.includes(',') || !/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(x)) return {erro:'Use vírgula como separador decimal (ex: 1.500,0000).'};
+    x = x.replace(/\./g,'');
+  }
+  if(!/^\d+(,\d{1,4})?$/.test(x)) return {erro:'Valor inválido. Use números e vírgula, com até 4 casas decimais (ex: 6,8925).'};
+  return { valor: arredPreco(parseFloat(x.replace(',','.'))) };
 }
 function celulaNomeDe(e){ const c = celulas.find(x=>x.id===e.celulaId); return c ? c.nome : (e.celulaNome||''); }
 
@@ -3288,7 +3302,7 @@ document.getElementById('ped-empresa').addEventListener('change', ()=>{
               ${tabelaMes.map(p=>`
                 <tr data-ne="${ne}" data-preco-id="${p.id}">
                   <td><input type="checkbox" class="ped-item-check"></td>
-                  <td>${p.produto}</td><td>${p.unidade||'-'}</td><td>${fmtMoney(p.precoUnitario)}</td>
+                  <td>${p.produto}</td><td>${p.unidade||'-'}</td><td>${fmtPreco(p.precoUnitario)}</td>
                   <td><input type="text" inputmode="decimal" class="ped-item-qtd" autocomplete="off" style="width:110px" placeholder="0"></td>
                   <td class="ped-vtotal">—</td>
                 </tr>`).join('')}
@@ -3388,9 +3402,9 @@ function renderPrecos(){
   const tbody = document.querySelector('#tbl-precos tbody');
   tbody.innerHTML = lista.length ? lista.map(p=>`
     <tr>
-      <td>${p.produto}</td><td>${p.unidade||'-'}</td><td>${fmtMoney(p.precoUnitario)}</td>
+      <td>${p.produto}</td><td>${p.unidade||'-'}</td><td>${fmtPreco(p.precoUnitario)}</td>
       <td class="resp-acao">${p.criadoPorEmail||'—'}<br>${fmtDataHora(p.criadoEm)}</td>
-      <td class="resp-acao">${p.alteradoEm?`${p.alteradoPorEmail}<br>${fmtDataHora(p.alteradoEm)}`:'—'}${p.alteracoes.length?`<br><span title="${p.alteracoes.map(a=>fmtDataHora(a.em)+' · '+a.email+': '+fmtMoney(a.precoAnterior)+' → '+fmtMoney(a.precoNovo)).join('&#10;')}" style="text-decoration:underline dotted; cursor:help">${p.alteracoes.length} alteração(ões)</span>`:''}</td>
+      <td class="resp-acao">${p.alteradoEm?`${p.alteradoPorEmail}<br>${fmtDataHora(p.alteradoEm)}`:'—'}${p.alteracoes.length?`<br><span title="${p.alteracoes.map(a=>fmtDataHora(a.em)+' · '+a.email+': '+fmtPreco(a.precoAnterior)+' → '+fmtPreco(a.precoNovo)).join('&#10;')}" style="text-decoration:underline dotted; cursor:help">${p.alteracoes.length} alteração(ões)</span>`:''}</td>
       <td style="white-space:nowrap">${admin?`<button type="button" onclick="editarPreco('${p.id}')" style="padding:4px 9px">✏️ Editar</button> <button type="button" class="danger" onclick="excluirPreco('${p.id}')">Excluir</button>`:''}</td>
     </tr>`).join('') : `<tr><td colspan="6" class="empty">Nenhum preço cadastrado para ${fmtRef(ref)}.</td></tr>`;
 }
@@ -3407,7 +3421,7 @@ window.editarPreco = function(id){
   document.getElementById('pm-produto').value = p.produto;
   document.getElementById('pm-produto').readOnly = true;
   document.getElementById('pm-unidade').value = p.unidade;
-  document.getElementById('pm-preco').value = String(p.precoUnitario.toFixed(2)).replace('.',',');
+  document.getElementById('pm-preco').value = p.precoUnitario.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4,useGrouping:false});
   document.getElementById('pm-form-titulo').textContent = `Alterar preço — ${p.produto} (${fmtRef(p.referencia)})`;
   document.getElementById('btn-pm-salvar').textContent = 'Salvar alteração';
   document.getElementById('btn-pm-cancelar').classList.remove('hidden');
@@ -3430,7 +3444,7 @@ document.getElementById('btn-pm-salvar').addEventListener('click', async ()=>{
   if(!/^\d{4}-\d{2}$/.test(ref)){ msgPM('Informe o mês e ano de referência.', false); return; }
   const produto = document.getElementById('pm-produto').value.trim();
   const unidade = document.getElementById('pm-unidade').value.trim().toUpperCase();
-  const pv = parseMoeda(document.getElementById('pm-preco').value);
+  const pv = parsePreco(document.getElementById('pm-preco').value);
   if(!produto){ msgPM('Informe o produto.', false); return; }
   if(!unidade){ msgPM('Informe a unidade de fornecimento.', false); return; }
   if(pv.vazio){ msgPM('Informe o preço unitário.', false); return; }
@@ -3446,7 +3460,7 @@ document.getElementById('btn-pm-salvar').addEventListener('click', async ()=>{
       const alteracoes = [...p.alteracoes, { em:agora, email, precoAnterior:p.precoUnitario, precoNovo:pv.valor, unidadeAnterior:p.unidade, unidadeNova:unidade }];
       await updateDoc(doc(db,'precosMensais',p.id), { unidade, precoUnitario:pv.valor, alteradoPorUid:usuarioAtual.uid, alteradoPorEmail:email, alteradoEm:agora, alteracoes });
       Object.assign(p, { unidade, precoUnitario:pv.valor, alteradoPorEmail:email, alteradoEm:agora, alteracoes });
-      msgPM(`Preço de "${p.produto}" (${fmtRef(ref)}) alterado para ${fmtMoney(pv.valor)}. Pedidos já gerados continuam com o preço antigo.`, true);
+      msgPM(`Preço de "${p.produto}" (${fmtRef(ref)}) alterado para ${fmtPreco(pv.valor)}. Pedidos já gerados continuam com o preço antigo.`, true);
       limparFormPM();
     } else {
       const id = ref + '_' + chaveRegistro(produto);
@@ -3530,7 +3544,7 @@ function gerarPDFPedido(p){
   doc.text(`CNPJ: ${p.empresaCnpj||'-'}`, margemEsq, y); y += 16;
   doc.text(`TELE/FAX: ${p.empresaTelefone||'-'}`, margemEsq, y); y += 20;
 
-  const linhasTabela = p.itens.map((it,i)=>[i+1, it.item, it.uf||'-', fmtQtd(it.qtd), fmtMoney(it.valorUnitario), fmtMoney(it.valorTotal)]);
+  const linhasTabela = p.itens.map((it,i)=>[i+1, it.item, it.uf||'-', fmtQtd(it.qtd), fmtPreco(it.valorUnitario), fmtMoney(it.valorTotal)]);
   doc.autoTable({
     startY: y,
     head: [['ITEM','NOMENCLATURA','UF','QTD','VALOR UNITÁRIO','VALOR TOTAL']],
