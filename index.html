@@ -299,6 +299,14 @@ header h1 .logo-farol{--cor:var(--on-dark)}
 .hf-reforcos h3{margin:0 0 6px; font-size:.85rem; color:var(--navy)}
 .hf-itens-tit{padding:8px 18px 0; font-size:.76rem; color:var(--text-2)}
 body.perfil-restrito .btn-reforco{display:none !important}
+/* ---- Tabela Mensal de Preços ---- */
+.pm-meses{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+.pm-meses button{border:1px solid var(--line); background:var(--card); border-radius:999px; padding:3px 11px; font-size:.76rem; cursor:pointer; color:var(--text)}
+.pm-meses button.on{background:var(--navy); color:var(--on-dark); border-color:var(--navy)}
+.pm-aviso{padding:10px 12px; border-radius:8px; background:rgba(242,179,61,.18); color:#7A4D00; font-size:.84rem; border:1px solid rgba(242,179,61,.45)}
+.ped-total-estimado{display:flex; justify-content:flex-end; align-items:baseline; gap:10px; margin-top:10px; font-size:.9rem; color:var(--text-2)}
+.ped-total-estimado b{font-family:var(--font-title); font-size:1.3rem; color:var(--navy); font-variant-numeric:tabular-nums}
+.ped-vtotal{font-variant-numeric:tabular-nums; white-space:nowrap}
 .login-card h1{font-size:2.1rem; margin:0 0 6px; font-weight:700; letter-spacing:.1em; color:var(--navy)}
 .login-card .login-sub{color:var(--navy); font-size:.84rem; font-weight:600; margin:0 0 4px; line-height:1.35}
 .login-card .login-slogan{color:var(--amber-dark); font-size:.8rem; font-style:italic; margin:0 0 16px}
@@ -460,6 +468,7 @@ body.perfil-restrito .btn-reforco{display:none !important}
   </div>
   <div class="submenu-grupo hidden" data-grupo="pedidos">
     <button class="submenu-btn active" data-tab="pedidos" type="button">Novo Pedido de Gêneros</button>
+    <button class="submenu-btn" data-tab="precos" type="button">Tabela Mensal de Preços</button>
     <button class="submenu-btn" data-tab="documentos" type="button">Documentos</button>
   </div>
 </div>
@@ -606,6 +615,7 @@ body.perfil-restrito .btn-reforco{display:none !important}
       <div id="ped-itens-wrap" class="hidden" style="margin-top:16px">
         <label>Itens disponíveis, organizados por empenho — marque os itens e informe a quantidade solicitada</label>
         <div id="ped-itens-lista" style="margin-top:8px"></div>
+        <div class="ped-total-estimado">Valor total estimado do pedido: <b id="ped-total-estimado">R$ 0,00</b></div>
       </div>
 
       <div id="ped-detalhes-wrap" class="hidden" style="margin-top:16px">
@@ -629,6 +639,44 @@ body.perfil-restrito .btn-reforco{display:none !important}
       <div class="tablewrap">
         <table id="tbl-pedidos">
           <thead><tr><th>Nº Pedido</th><th>Empresa</th><th>Data</th><th>Valor total</th><th>Responsável pela Ação</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-precos" class="tab hidden">
+    <div class="card">
+      <h2>Tabela Mensal de Preços — Hortifrutigranjeiros</h2>
+      <p style="color:var(--muted); font-size:.84rem; margin:0 0 12px">Preços de referência usados automaticamente nos Pedidos de Gêneros de empenhos de Hortifrutigranjeiros, conforme o mês do pedido. Cada pedido guarda os preços do momento em que foi gerado.</p>
+      <div class="grid">
+        <div class="field"><label>Mês e ano de referência</label><input id="pm-mes" type="month"></div>
+      </div>
+      <div style="font-size:.8rem; color:var(--text-2); margin-top:6px">Meses com tabela cadastrada:</div>
+      <div class="pm-meses" id="pm-meses"></div>
+    </div>
+
+    <div class="card" id="pm-card-form">
+      <h2 id="pm-form-titulo">Cadastrar preço</h2>
+      <div class="grid">
+        <div class="field"><label>Produto</label><input id="pm-produto" placeholder="Ex: Tomate" autocomplete="off"></div>
+        <div class="field"><label>Unidade de fornecimento</label><input id="pm-unidade" placeholder="Ex: KG" autocomplete="off"></div>
+        <div class="field"><label>Preço unitário (R$)</label><input id="pm-preco" inputmode="decimal" placeholder="Ex: 6,90" autocomplete="off"></div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="btn-pm-salvar" type="button">Adicionar à tabela do mês</button>
+        <button id="btn-pm-cancelar" type="button" class="hidden">Cancelar edição</button>
+        <button id="btn-pm-copiar" type="button">Copiar produtos de outro mês</button>
+        <span id="msg-pm"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 id="pm-lista-titulo">Preços do mês</h2>
+      <div id="pm-aviso-vazio" class="pm-aviso hidden"></div>
+      <div class="tablewrap">
+        <table id="tbl-precos">
+          <thead><tr><th>Produto</th><th>Unidade</th><th>Preço unitário</th><th>Cadastrado por</th><th>Última alteração</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -864,6 +912,13 @@ function hfFromDoc(d){ const r=d.data(); return { id:d.id, numero:r.numero||'', 
 function reforcoFromDoc(d){ const r=d.data(); return { id:d.id, hfId:r.hfId||'', numero:r.numero||'', valor:Number(r.valor)||0,
   documento:r.documento||'', data:r.data||'', usuarioEmail:r.usuarioEmail||'', saldoApos:Number(r.saldoEmpenhoApos)||0, createdAt:Number(r.createdAt)||0 }; }
 // ---- Hortifrutigranjeiros: helpers ----
+function precoFromDoc(d){ const r=d.data(); return { id:d.id, referencia:r.referencia||'', produto:r.produto||'', unidade:r.unidade||'',
+  precoUnitario:Number(r.precoUnitario)||0, criadoPorEmail:r.criadoPorEmail||'', criadoEm:Number(r.criadoEm)||0,
+  alteradoPorEmail:r.alteradoPorEmail||'', alteradoEm:Number(r.alteradoEm)||0, alteracoes:Array.isArray(r.alteracoes)?r.alteracoes:[] }; }
+function mesAtualRef(){ return isoHoje().slice(0,7); }
+function fmtRef(ref){ return ref ? ref.slice(5,7)+'/'+ref.slice(0,4) : '-'; }
+function fmtDataHora(ms){ return ms ? new Date(ms).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : '—'; }
+function precosDoMes(ref){ return precosMensais.filter(p=>p.referencia===ref).sort((a,b)=>a.produto.localeCompare(b.produto,'pt-BR')); }
 function hfDoNE(numero){ return empenhosHF.find(h=>h.numero===numero) || null; }
 function ehHF(itens){ return !!(itens && itens.some(e=>e.tipo==='hortifruti')); }
 function ehHFNumero(numero){ return ehHF(empenhos.filter(e=>e.numero===numero)); }
@@ -904,7 +959,7 @@ function pedidoFromDoc(d){
     empresaCnpj:r.empresaCnpj||'', empresaEndereco:r.empresaEndereco||'', empresaTelefone:r.empresaTelefone||'', empresaEmail:r.empresaEmail||'',
     numeroEmpenho:r.numeroEmpenho||'', itens:r.itens||[], valorTotal:Number(r.valorTotal)||0,
     obs:r.obs||'', contato:r.contato||'', prazoRecebimento:r.prazoRecebimento||'',
-    assinatura1:r.assinatura1||null, assinatura2:r.assinatura2||null, responsavelEmail:r.responsavelEmail||'' };
+    assinatura1:r.assinatura1||null, assinatura2:r.assinatura2||null, responsavelEmail:r.responsavelEmail||'', referenciaPrecos:r.referenciaPrecos||'' };
 }
 
 function documentoFromDoc(d){
@@ -914,6 +969,7 @@ function documentoFromDoc(d){
 }
 
 let empresas = [];
+let precosMensais = []; // tabela mensal de preços (Hortifrutigranjeiros) — global, mantida pelo administrador
 let empenhosHF = [];   // controle de saldo dos empenhos de Hortifrutigranjeiros (um documento por NE)
 let reforcosHF = [];   // histórico de reforços
 let celulas = [];
@@ -987,6 +1043,11 @@ async function carregarDados(){
     empenhosHF = hfSnap.docs.map(hfFromDoc);
     reforcosHF = rfSnap.docs.map(reforcoFromDoc);
   }catch(e){ console.error('Erro ao carregar os empenhos de Hortifrutigranjeiros:', e.code, e.message); empenhosHF = []; reforcosHF = []; }
+
+  try{
+    const pmSnap = await getDocs(collection(db,'precosMensais'));
+    precosMensais = pmSnap.docs.map(precoFromDoc);
+  }catch(e){ console.error('Erro ao carregar a Tabela Mensal de Preços:', e.code, e.message); precosMensais = []; }
 
   // configurações globais do sistema (nome da OM e logotipo) — lidas por todos, editadas só pelo admin
   try{
@@ -1418,6 +1479,7 @@ function abrirTela(tab){
   if(tab==='config') { renderEmpresas(); renderAssinaturas(); }
   if(tab==='pedidos') { popularSelectEmpresaPedido(); popularSelectAssinaturas(); renderPedidos(); }
   if(tab==='documentos') { popularSelectEmpresaDoc(); renderDocumentos(); }
+  if(tab==='precos') renderPrecos();
 }
 function abrirGrupo(grupo, tab){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.grupo===grupo));
@@ -3205,12 +3267,43 @@ document.getElementById('ped-empresa').addEventListener('change', ()=>{
       if(!porNE[x.numero]){ porNE[x.numero] = []; ordemNE.push(x.numero); }
       porNE[x.numero].push(x);
     });
-    lista.innerHTML = ordemNE.map(ne=>`
+    const refPed = mesAtualRef();
+    const tabelaMes = precosDoMes(refPed);
+    const blocoHF = ne=>{
+      const h = hfDoNE(ne);
+      const saldoTxt = h ? ` — saldo do empenho ${fmtMoney(h.saldo)}` : '';
+      if(!tabelaMes.length) return `
+      <div class="grupo-empenho" style="margin-bottom:12px" data-hf-ne="${ne}" data-hf-saldo="${h?h.saldo:''}">
+        <div class="grupo-header"><div class="info"><span><b>Empenho nº ${ne}</b></span> <span class="hf-badge">Hortifrutigranjeiro</span></div></div>
+        <div class="pm-aviso" style="margin:10px">A Tabela Mensal de Preços de <b>${fmtRef(refPed)}</b> ainda não foi cadastrada. Os itens de Hortifrutigranjeiros só podem ser pedidos depois que o administrador cadastrar os preços deste mês (Pedidos → Tabela Mensal de Preços). Preços de meses anteriores não são usados automaticamente.</div>
+      </div>`;
+      return `
+      <div class="grupo-empenho" style="margin-bottom:12px" data-hf-ne="${ne}" data-hf-saldo="${h?h.saldo:''}">
+        <div class="grupo-header"><div class="info"><span><b>Empenho nº ${ne}</b></span> <span class="hf-badge">Hortifrutigranjeiro</span>
+          <span style="font-size:.8rem; color:var(--text-2)">Preços da Tabela Mensal de ${fmtRef(refPed)}${saldoTxt}</span></div></div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th></th><th>Produto</th><th>UF</th><th>Vlr. unit. (tabela ${fmtRef(refPed)})</th><th>Qtd. solicitada</th><th>Vlr. total</th></tr></thead>
+            <tbody>
+              ${tabelaMes.map(p=>`
+                <tr data-ne="${ne}" data-preco-id="${p.id}">
+                  <td><input type="checkbox" class="ped-item-check"></td>
+                  <td>${p.produto}</td><td>${p.unidade||'-'}</td><td>${fmtMoney(p.precoUnitario)}</td>
+                  <td><input type="text" inputmode="decimal" class="ped-item-qtd" autocomplete="off" style="width:110px" placeholder="0"></td>
+                  <td class="ped-vtotal">—</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="ped-hf-alerta msg err hidden" style="margin:8px 10px"></div>
+      </div>`;
+    };
+    lista.innerHTML = ordemNE.map(ne=> ehHFNumero(ne) ? blocoHF(ne) : `
       <div class="grupo-empenho" style="margin-bottom:12px">
         <div class="grupo-header"><div class="info"><span><b>Empenho nº ${ne}</b></span></div></div>
         <div class="tablewrap">
           <table>
-            <thead><tr><th></th><th>Item</th><th>UF</th><th>Vlr. unit.</th><th>Saldo</th><th>Qtd. solicitada</th></tr></thead>
+            <thead><tr><th></th><th>Item</th><th>UF</th><th>Vlr. unit.</th><th>Saldo</th><th>Qtd. solicitada</th><th>Vlr. total</th></tr></thead>
             <tbody>
               ${porNE[ne].map(x=>`
                 <tr data-id="${x.id}">
@@ -3218,17 +3311,188 @@ document.getElementById('ped-empresa').addEventListener('change', ()=>{
                   <td>${x.item}</td><td>${x.uf||'-'}</td><td>${fmtMoney(x.vunit)}</td>
                   <td>${fmtQtd(x.saldoQtd)} un.</td>
                   <td><input type="text" inputmode="decimal" class="ped-item-qtd" autocomplete="off" style="width:110px" placeholder="0"></td>
+                  <td class="ped-vtotal">—</td>
                 </tr>`).join('')}
             </tbody>
           </table>
         </div>
       </div>`).join('');
   }
+  atualizarTotaisPedido();
   if(nesBloqueados.length){
     lista.insertAdjacentHTML('afterbegin', `<div class="msg err" style="margin-bottom:10px">Indisponíveis para novos pedidos: ${nesBloqueados.map(n=>n+' ('+STATUS_INFO[statusDoNE(n)].nome+')').join(', ')}.</div>`);
   }
   wrapItens.classList.remove('hidden');
   wrapDetalhes.classList.remove('hidden');
+});
+
+// ---- totais do pedido (por item e estimado) ----
+function precoDaLinhaPedido(tr){
+  if(tr.dataset.precoId){ const p = precosMensais.find(x=>x.id===tr.dataset.precoId); return p ? p.precoUnitario : 0; }
+  const e = empenhos.find(x=>x.id===tr.dataset.id); return e ? e.vunit : 0;
+}
+function atualizarTotaisPedido(){
+  let total = 0;
+  const porNEHF = {};
+  document.querySelectorAll('#ped-itens-lista tbody tr').forEach(tr=>{
+    const cel = tr.querySelector('.ped-vtotal'); if(!cel) return;
+    const q = parseQtd(tr.querySelector('.ped-item-qtd').value);
+    const marcado = tr.querySelector('.ped-item-check').checked;
+    if(q.vazio || q.erro || !(q.valor>0)){ cel.textContent = (!q.vazio && q.erro) ? 'qtd. inválida' : '—'; return; }
+    const v = arredMoeda(q.valor * precoDaLinhaPedido(tr));
+    cel.textContent = fmtMoney(v);
+    if(marcado){ total += v; if(tr.dataset.precoId) porNEHF[tr.dataset.ne] = (porNEHF[tr.dataset.ne]||0) + v; }
+  });
+  document.querySelectorAll('#ped-itens-lista [data-hf-ne]').forEach(bl=>{
+    const al = bl.querySelector('.ped-hf-alerta'); if(!al) return;
+    const saldo = Number(bl.dataset.hfSaldo); const v = arredMoeda(porNEHF[bl.dataset.hfNe]||0);
+    if(bl.dataset.hfSaldo!=='' && v > saldo){ al.textContent = `Atenção: o valor estimado dos itens deste empenho (${fmtMoney(v)}) é maior que o saldo disponível (${fmtMoney(saldo)}).`; al.classList.remove('hidden'); }
+    else al.classList.add('hidden');
+  });
+  const el = document.getElementById('ped-total-estimado'); if(el) el.textContent = fmtMoney(arredMoeda(total));
+}
+document.getElementById('ped-itens-lista').addEventListener('input', atualizarTotaisPedido);
+document.getElementById('ped-itens-lista').addEventListener('change', atualizarTotaisPedido);
+
+// ---- Tabela Mensal de Preços (cadastro e consulta) ----
+let pmEditandoId = null, pmSalvando = false;
+function ehAdmin(){ return !!(usuarioAutorizacao && usuarioAutorizacao.isAdmin); }
+function msgPM(t, ok){ const m=document.getElementById('msg-pm'); m.className = t ? (ok?'msg ok':'msg err') : ''; m.textContent = t||''; }
+function limparFormPM(){
+  pmEditandoId = null;
+  ['pm-produto','pm-unidade','pm-preco'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pm-produto').readOnly = false;
+  document.getElementById('pm-form-titulo').textContent = 'Cadastrar preço';
+  document.getElementById('btn-pm-salvar').textContent = 'Adicionar à tabela do mês';
+  document.getElementById('btn-pm-cancelar').classList.add('hidden');
+}
+function renderPrecos(){
+  const inp = document.getElementById('pm-mes');
+  if(!inp.value) inp.value = mesAtualRef();
+  const ref = inp.value;
+  const admin = ehAdmin();
+  document.getElementById('pm-card-form').classList.toggle('hidden', !admin);
+  const meses = [...new Set(precosMensais.map(p=>p.referencia))].sort().reverse();
+  document.getElementById('pm-meses').innerHTML = meses.length
+    ? meses.map(m=>`<button type="button" data-ref="${m}" class="${m===ref?'on':''}">${fmtRef(m)} (${precosDoMes(m).length})</button>`).join('')
+    : '<span style="font-size:.8rem; color:var(--text-2)">Nenhuma tabela cadastrada ainda.</span>';
+  document.getElementById('pm-lista-titulo').textContent = `Preços de ${fmtRef(ref)}` + (ref===mesAtualRef()?' (mês atual — usado nos novos pedidos)':'');
+  const lista = precosDoMes(ref);
+  const aviso = document.getElementById('pm-aviso-vazio');
+  if(!lista.length){
+    aviso.innerHTML = ref===mesAtualRef()
+      ? `A tabela de <b>${fmtRef(ref)}</b> ainda não foi cadastrada. Enquanto isso, os Pedidos de Gêneros de Hortifrutigranjeiros ficam sem preços para este mês.${admin?' Cadastre os preços acima ou use "Copiar produtos de outro mês".':' Avise o administrador.'}`
+      : `Não há preços cadastrados para ${fmtRef(ref)}.`;
+    aviso.classList.remove('hidden');
+  } else aviso.classList.add('hidden');
+  const tbody = document.querySelector('#tbl-precos tbody');
+  tbody.innerHTML = lista.length ? lista.map(p=>`
+    <tr>
+      <td>${p.produto}</td><td>${p.unidade||'-'}</td><td>${fmtMoney(p.precoUnitario)}</td>
+      <td class="resp-acao">${p.criadoPorEmail||'—'}<br>${fmtDataHora(p.criadoEm)}</td>
+      <td class="resp-acao">${p.alteradoEm?`${p.alteradoPorEmail}<br>${fmtDataHora(p.alteradoEm)}`:'—'}${p.alteracoes.length?`<br><span title="${p.alteracoes.map(a=>fmtDataHora(a.em)+' · '+a.email+': '+fmtMoney(a.precoAnterior)+' → '+fmtMoney(a.precoNovo)).join('&#10;')}" style="text-decoration:underline dotted; cursor:help">${p.alteracoes.length} alteração(ões)</span>`:''}</td>
+      <td style="white-space:nowrap">${admin?`<button type="button" onclick="editarPreco('${p.id}')" style="padding:4px 9px">✏️ Editar</button> <button type="button" class="danger" onclick="excluirPreco('${p.id}')">Excluir</button>`:''}</td>
+    </tr>`).join('') : `<tr><td colspan="6" class="empty">Nenhum preço cadastrado para ${fmtRef(ref)}.</td></tr>`;
+}
+document.getElementById('pm-mes').addEventListener('change', ()=>{ limparFormPM(); msgPM(''); renderPrecos(); });
+document.getElementById('pm-meses').addEventListener('click', ev=>{
+  const b = ev.target.closest('button[data-ref]'); if(!b) return;
+  document.getElementById('pm-mes').value = b.dataset.ref; limparFormPM(); msgPM(''); renderPrecos();
+});
+document.getElementById('btn-pm-cancelar').addEventListener('click', ()=>{ limparFormPM(); msgPM(''); });
+window.editarPreco = function(id){
+  if(!ehAdmin()){ alert('Somente o administrador altera a Tabela Mensal de Preços.'); return; }
+  const p = precosMensais.find(x=>x.id===id); if(!p) return;
+  pmEditandoId = id;
+  document.getElementById('pm-produto').value = p.produto;
+  document.getElementById('pm-produto').readOnly = true;
+  document.getElementById('pm-unidade').value = p.unidade;
+  document.getElementById('pm-preco').value = String(p.precoUnitario.toFixed(2)).replace('.',',');
+  document.getElementById('pm-form-titulo').textContent = `Alterar preço — ${p.produto} (${fmtRef(p.referencia)})`;
+  document.getElementById('btn-pm-salvar').textContent = 'Salvar alteração';
+  document.getElementById('btn-pm-cancelar').classList.remove('hidden');
+  msgPM('');
+  { const cf = document.getElementById('pm-card-form'); if(cf.scrollIntoView) cf.scrollIntoView({behavior:'smooth', block:'start'}); }
+};
+window.excluirPreco = async function(id){
+  if(!ehAdmin()){ alert('Somente o administrador altera a Tabela Mensal de Preços.'); return; }
+  const p = precosMensais.find(x=>x.id===id); if(!p) return;
+  if(!confirm(`Excluir "${p.produto}" da tabela de ${fmtRef(p.referencia)}? Pedidos já gerados não são alterados.`)) return;
+  try{ await deleteDoc(doc(db,'precosMensais',id)); }catch(err){ alert('Erro ao excluir: '+err.message); return; }
+  precosMensais = precosMensais.filter(x=>x.id!==id);
+  if(pmEditandoId===id) limparFormPM();
+  renderPrecos();
+};
+document.getElementById('btn-pm-salvar').addEventListener('click', async ()=>{
+  if(!ehAdmin()){ msgPM('Somente o administrador altera a Tabela Mensal de Preços.', false); return; }
+  if(pmSalvando) return;
+  const ref = document.getElementById('pm-mes').value;
+  if(!/^\d{4}-\d{2}$/.test(ref)){ msgPM('Informe o mês e ano de referência.', false); return; }
+  const produto = document.getElementById('pm-produto').value.trim();
+  const unidade = document.getElementById('pm-unidade').value.trim().toUpperCase();
+  const pv = parseMoeda(document.getElementById('pm-preco').value);
+  if(!produto){ msgPM('Informe o produto.', false); return; }
+  if(!unidade){ msgPM('Informe a unidade de fornecimento.', false); return; }
+  if(pv.vazio){ msgPM('Informe o preço unitário.', false); return; }
+  if(pv.erro){ msgPM('Preço unitário: '+pv.erro, false); return; }
+  if(!(pv.valor>0)){ msgPM('O preço unitário deve ser maior que zero.', false); return; }
+  const email = (usuarioAtual.email||'').toLowerCase(); const agora = Date.now();
+  pmSalvando = true; const btn = document.getElementById('btn-pm-salvar'); btn.disabled = true;
+  try{
+    if(pmEditandoId){
+      const p = precosMensais.find(x=>x.id===pmEditandoId);
+      if(!p) throw new Error('Preço não encontrado.');
+      if(p.unidade===unidade && p.precoUnitario===pv.valor){ msgPM('Nada foi alterado.', true); return; }
+      const alteracoes = [...p.alteracoes, { em:agora, email, precoAnterior:p.precoUnitario, precoNovo:pv.valor, unidadeAnterior:p.unidade, unidadeNova:unidade }];
+      await updateDoc(doc(db,'precosMensais',p.id), { unidade, precoUnitario:pv.valor, alteradoPorUid:usuarioAtual.uid, alteradoPorEmail:email, alteradoEm:agora, alteracoes });
+      Object.assign(p, { unidade, precoUnitario:pv.valor, alteradoPorEmail:email, alteradoEm:agora, alteracoes });
+      msgPM(`Preço de "${p.produto}" (${fmtRef(ref)}) alterado para ${fmtMoney(pv.valor)}. Pedidos já gerados continuam com o preço antigo.`, true);
+      limparFormPM();
+    } else {
+      const id = ref + '_' + chaveRegistro(produto);
+      if(precosMensais.some(x=>x.id===id || (x.referencia===ref && chaveRegistro(x.produto)===chaveRegistro(produto)))){
+        msgPM(`"${produto}" já está na tabela de ${fmtRef(ref)}. Use Editar para alterar o preço.`, false); return;
+      }
+      const dados = { referencia:ref, produto, unidade, precoUnitario:pv.valor, criadoPorUid:usuarioAtual.uid, criadoPorEmail:email, criadoEm:agora, alteracoes:[] };
+      await setDoc(doc(db,'precosMensais',id), dados);
+      precosMensais.push(precoFromDoc({ id, data:()=>dados }));
+      msgPM(`"${produto}" incluído na tabela de ${fmtRef(ref)}.`, true);
+      ['pm-produto','pm-unidade','pm-preco'].forEach(i=>document.getElementById(i).value='');
+      document.getElementById('pm-produto').focus();
+    }
+  }catch(err){ msgPM('Erro ao salvar: '+err.message, false); return; }
+  finally{ pmSalvando = false; btn.disabled = false; }
+  renderPrecos();
+});
+document.getElementById('btn-pm-copiar').addEventListener('click', async ()=>{
+  if(!ehAdmin()){ msgPM('Somente o administrador altera a Tabela Mensal de Preços.', false); return; }
+  const ref = document.getElementById('pm-mes').value;
+  if(!/^\d{4}-\d{2}$/.test(ref)){ msgPM('Informe o mês e ano de referência.', false); return; }
+  const meses = [...new Set(precosMensais.map(p=>p.referencia))].filter(m=>m!==ref).sort().reverse();
+  if(!meses.length){ msgPM('Não há outra tabela cadastrada para copiar.', false); return; }
+  const origem = prompt(`Copiar os produtos de qual mês para ${fmtRef(ref)}?\nDigite no formato MM/AAAA. Meses disponíveis: ${meses.map(fmtRef).join(', ')}`, fmtRef(meses[0]));
+  if(origem===null) return;
+  const mm = (origem||'').trim().match(/^(\d{1,2})\/(\d{4})$/);
+  if(!mm){ msgPM('Mês de origem inválido. Use MM/AAAA.', false); return; }
+  const refOrigem = mm[2]+'-'+mm[1].padStart(2,'0');
+  const fonte = precosDoMes(refOrigem);
+  if(!fonte.length){ msgPM(`Não há preços cadastrados em ${fmtRef(refOrigem)}.`, false); return; }
+  const novos = fonte.filter(p=>!precosDoMes(ref).some(x=>chaveRegistro(x.produto)===chaveRegistro(p.produto)));
+  if(!novos.length){ msgPM(`Todos os produtos de ${fmtRef(refOrigem)} já estão na tabela de ${fmtRef(ref)}.`, false); return; }
+  if(!confirm(`Copiar ${novos.length} produto(s) de ${fmtRef(refOrigem)} para ${fmtRef(ref)}, com os mesmos preços? Depois você pode editar os preços do novo mês.`)) return;
+  const email = (usuarioAtual.email||'').toLowerCase(); const agora = Date.now();
+  const ops = novos.map(p=>({ id: ref+'_'+chaveRegistro(p.produto), dados:{ referencia:ref, produto:p.produto, unidade:p.unidade, precoUnitario:p.precoUnitario,
+    criadoPorUid:usuarioAtual.uid, criadoPorEmail:email, criadoEm:agora, copiadoDe:refOrigem, alteracoes:[] } }));
+  try{
+    for(let i=0;i<ops.length;i+=400){
+      const b = writeBatch(db);
+      ops.slice(i,i+400).forEach(o=>b.set(doc(db,'precosMensais',o.id), o.dados));
+      await b.commit();
+    }
+  }catch(err){ msgPM('Erro ao copiar: '+err.message+'. Nada foi copiado.', false); return; }
+  ops.forEach(o=>precosMensais.push(precoFromDoc({ id:o.id, data:()=>o.dados })));
+  msgPM(`${ops.length} produto(s) copiado(s) de ${fmtRef(refOrigem)} para ${fmtRef(ref)}. Revise os preços do novo mês.`, true);
+  renderPrecos();
 });
 
 function gerarPDFPedido(p){
@@ -3316,6 +3580,20 @@ document.getElementById('btn-gerar-pedido').addEventListener('click', async ()=>
     if(erroPed) return;
     const marcado = tr.querySelector('.ped-item-check').checked;
     if(!marcado) return;
+    if(tr.dataset.precoId){
+      // Hortifrutigranjeiros: produto e preço da Tabela Mensal do mês do pedido (o preço fica gravado no pedido)
+      const p = precosMensais.find(x=>x.id===tr.dataset.precoId);
+      const ne = tr.dataset.ne;
+      if(!p || p.referencia!==mesAtualRef()){ erroPed = `A Tabela Mensal de Preços de ${fmtRef(mesAtualRef())} mudou. Selecione a empresa de novo para recarregar os preços.`; return; }
+      const qh = parseQtd(tr.querySelector('.ped-item-qtd').value);
+      if(qh.vazio || (qh.valor!==undefined && qh.valor<=0)) return;
+      { const c = checarOp(ne,'pedido'); if(!c.ok){ erroPed = c.msg; return; } }
+      if(qh.erro){ erroPed = `"${p.produto}": ${qh.erro}`; return; }
+      itensSelecionados.push({ item:p.produto, uf:p.unidade, qtd:qh.valor, valorUnitario:p.precoUnitario, valorTotal:arredMoeda(qh.valor*p.precoUnitario),
+        origemPreco:'tabela-mensal', referenciaPreco:p.referencia, precoId:p.id });
+      nesUsados.add(ne);
+      return;
+    }
     const e = empenhos.find(x=>x.id===tr.dataset.id);
     if(!e) return;
     const q0 = parseQtd(tr.querySelector('.ped-item-qtd').value);
@@ -3341,6 +3619,7 @@ document.getElementById('btn-gerar-pedido').addEventListener('click', async ()=>
     numeroPedido, dataEmissao, empresaNome:empresa.nome, empresaCnpj:empresa.cnpj,
     empresaEndereco:empresa.endereco, empresaTelefone:empresa.telefone, empresaEmail:empresa.email,
     numeroEmpenho, itens:itensSelecionados, valorTotal,
+    ...(itensSelecionados.some(i=>i.origemPreco==='tabela-mensal') ? { referenciaPrecos: mesAtualRef() } : {}),
     obs: document.getElementById('ped-obs').value.trim(),
     contato: document.getElementById('ped-contato').value.trim(),
     prazoRecebimento: document.getElementById('ped-prazo').value.trim(),
