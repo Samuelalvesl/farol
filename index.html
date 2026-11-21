@@ -213,6 +213,91 @@ body.perfil-restrito .btn-cel-renomear, body.perfil-restrito .btn-cel-excluir{di
 .atalho:focus-visible .atalho-img{outline:3px solid var(--blue); outline-offset:2px}
 .atalho-nome{font-size:.82rem; font-weight:600; text-align:center; line-height:1.25; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .atalho-mini{width:90px; height:60px; object-fit:cover; border-radius:6px; border:1px solid var(--line); display:block}
+:root{--ag-reu:#2F6FED; --ag-pra:#B23A3A; --ag-tar:#2E7D5B; --ag-ent:#8A5500; --ag-pes:#6B4BA8}
+.ag-top{display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:14px}
+.ag-navd{display:flex; gap:6px; align-items:center; flex-wrap:wrap}
+.ag-navd button,.ag-views button{border:1.5px solid var(--line); background:var(--card); color:var(--navy); border-radius:8px; padding:6px 12px; font-weight:600; font-size:.82rem; cursor:pointer}
+.ag-views{display:flex; border:1.5px solid var(--line); border-radius:9px; overflow:hidden}
+.ag-views button{border:0; border-radius:0; padding:7px 14px}
+.ag-views button.on{background:var(--navy); color:#fff}
+.ag-titulo{font-family:var(--font-title); font-size:1.3rem; color:var(--navy); letter-spacing:.03em; margin:0 8px}
+.ag-kpis{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:14px}
+.ag-k{background:var(--card); border:1px solid var(--line); border-left:4px solid var(--navy); border-radius:10px; padding:10px 14px}
+.ag-k .r{font-size:.66rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-2)}
+.ag-k .v{font-family:var(--font-title); font-size:1.5rem; color:var(--navy)}
+.ag-corpo{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:16px; align-items:start}
+.ag-lat{display:flex; flex-direction:column; gap:14px}
+.ag-lat .card{margin:0; padding:14px}
+.ag-leg{display:flex; gap:14px; flex-wrap:wrap; font-size:.75rem; color:var(--text-2); margin-top:10px}
+.ag-leg i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px}
+.ag-mes{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card)}
+.ag-mes .dow{background:var(--navy); color:#fff; font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; padding:7px 8px; font-weight:600}
+.ag-mes .d{min-height:92px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); padding:5px 6px; font-size:.72rem; position:relative; cursor:pointer; min-width:0}
+.ag-mes .d:hover{background:#F6F9FE}
+.ag-mes .d.fora{background:#F4F6F9; color:#9AA6B6}
+.ag-mes .d .n{font-weight:700; color:var(--navy); font-size:.78rem}
+.ag-mes .d.fora .n{color:#9AA6B6}
+.ag-mes .d.hoje{background:#EAF2FE} .ag-mes .d.hoje .n{background:var(--navy); color:#fff; border-radius:999px; padding:1px 7px}
+.ag-ev{display:block; border-radius:4px; padding:2px 5px; margin-top:3px; color:#fff; font-size:.68rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ag-ev.feito{opacity:.45; text-decoration:line-through}
+.ag-ev.atr{box-shadow:inset 0 0 0 2px #FFD25A}
+.ag-mais{color:var(--text-2); font-size:.66rem; margin-top:2px; display:block}
+.ag-dens{position:absolute; top:6px; right:6px; font-size:.62rem; background:#F2B33D; color:#0F1E33; border-radius:999px; padding:0 6px; font-weight:700}
+.ag-semwrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--card)}
+.ag-sem{display:grid; grid-template-columns:50px repeat(7,minmax(78px,1fr)); position:relative; min-width:600px}
+.ag-sem .cab{background:var(--navy); color:#fff; font-size:.72rem; padding:7px 6px; text-align:center; font-weight:600; cursor:pointer}
+.ag-sem .cab small{display:block; color:var(--on-dark-2); font-weight:400}
+.ag-sem .cab.hoje{background:var(--blue)}
+.ag-sem .h{font-size:.66rem; color:var(--text-2); text-align:right; padding:2px 6px 0 0; height:44px; border-bottom:1px dashed var(--line)}
+.ag-sem .c{height:44px; border-left:1px solid var(--line); border-bottom:1px dashed var(--line)}
+.ag-sem .c.hj{background:#F2F7FE}
+.ag-sem .td{border-left:1px solid var(--line); border-bottom:1px solid var(--line); padding:3px; min-height:30px; display:flex; flex-direction:column; gap:3px}
+.ag-sem .td.hj{background:#F2F7FE}
+.ag-sem .tdl{font-size:.62rem; color:var(--text-2); text-align:right; padding:5px 6px 0 0; border-bottom:1px solid var(--line)}
+.ag-blk{position:absolute; border-radius:6px; color:#fff; font-size:.66rem; padding:3px 5px; z-index:2; overflow:hidden; line-height:1.25; box-shadow:0 1px 2px rgba(0,0,0,.15); cursor:pointer}
+.ag-blk b{display:block; font-size:.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ag-blk.feito{opacity:.45; text-decoration:line-through}
+.ag-chip{border-radius:5px; color:#fff; font-size:.66rem; padding:2px 5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer}
+.ag-chip.feito{opacity:.45; text-decoration:line-through}
+.ag-agora{position:absolute; height:2px; background:#B23A3A; z-index:3; pointer-events:none}
+.ag-gd{font-family:var(--font-title); color:var(--navy); font-size:1rem; padding:6px 0; border-bottom:2px solid var(--navy); display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+.ag-gd span{font-family:var(--font-body); font-size:.72rem; color:var(--text-2)}
+.ag-card{display:flex; gap:10px; align-items:flex-start; background:var(--card); border:1px solid var(--line); border-left:5px solid; border-radius:8px; padding:9px 12px; margin-top:8px; font-size:.82rem}
+.ag-card .hr{color:var(--text-2); width:96px; flex:none; font-variant-numeric:tabular-nums}
+.ag-card .tit{color:var(--navy); font-weight:700}
+.ag-card .meta{color:var(--text-2); font-size:.74rem; margin-top:2px}
+.ag-card .acoes{margin-left:auto; display:flex; gap:6px; white-space:nowrap}
+.ag-card .acoes button{padding:3px 8px; font-size:.74rem}
+.ag-feito .tit{text-decoration:line-through; opacity:.6}
+.ag-chk{width:18px; height:18px; flex:none; margin-top:1px; accent-color:var(--ok); cursor:pointer}
+.ag-tag{font-size:.62rem; font-weight:700; border-radius:999px; padding:1px 8px; margin-left:6px; white-space:nowrap}
+.ag-tag.atr{background:rgba(178,58,58,.14); color:#B23A3A} .ag-tag.pen{background:rgba(242,179,61,.28); color:#7A4D00} .ag-tag.ok{background:rgba(46,125,91,.15); color:#2E7D5B} .ag-tag.fut{background:#E3EEFC; color:#1D4FA8} .ag-tag.pas{background:#EEF1F5; color:#5B6B82}
+.ag-it{display:flex; gap:8px; padding:9px 0; border-bottom:1px solid var(--line); font-size:.8rem}
+.ag-it:last-child{border-bottom:0}
+.ag-it .barra-c{width:4px; border-radius:3px; flex:none}
+.ag-it b{color:var(--navy); cursor:pointer}
+.ag-it .meta{color:var(--text-2); font-size:.72rem; margin-top:2px}
+.ag-mini{display:grid; grid-template-columns:repeat(7,1fr); gap:3px; font-size:.7rem; text-align:center}
+.ag-mini .dw{color:var(--text-2); font-weight:700; font-size:.62rem}
+.ag-mini .x{padding:6px 0; border-radius:6px; color:var(--navy); cursor:pointer}
+.ag-mini .x:hover{outline:1px solid var(--blue)}
+.ag-mini .x.f{color:#B5BFCC}
+.ag-mini .x.l1{background:#DCE9FB} .ag-mini .x.l2{background:#9EC1F3} .ag-mini .x.l3{background:#2F6FED; color:#fff}
+.ag-mini .x.hj{outline:2px solid var(--navy)}
+.ag-mini .x.sel{font-weight:800; text-decoration:underline}
+.ag-mini-top{display:flex; justify-content:space-between; align-items:center; font-weight:700; color:var(--navy); margin-bottom:8px}
+.ag-mini-top button{border:0; background:transparent; font-size:1rem; color:var(--navy); cursor:pointer; padding:0 6px}
+.ag-filtros label{display:flex; align-items:center; gap:6px; font-size:.78rem; color:var(--text-2); margin:4px 0; cursor:pointer}
+.ag-filtros input[type=checkbox]{width:auto; margin:0; flex:none; accent-color:var(--navy)}
+.ag-chk{padding:0}
+.ag-filtros i{display:inline-block; width:10px; height:10px; border-radius:2px}
+.ag-toasts{position:fixed; right:18px; bottom:18px; z-index:80; display:flex; flex-direction:column; gap:10px; max-width:340px}
+.ag-toast{background:var(--navy); color:#fff; border-radius:10px; padding:12px 14px; box-shadow:0 8px 24px rgba(0,0,0,.25); font-size:.84rem; border-left:5px solid #F2B33D}
+.ag-toast b{display:block; margin-bottom:2px}
+.ag-toast .bts{display:flex; gap:8px; margin-top:8px}
+.ag-toast button{background:#fff; color:var(--navy); border:0; border-radius:6px; padding:4px 10px; font-size:.76rem; font-weight:700; cursor:pointer}
+@media (max-width:1000px){ .ag-corpo{grid-template-columns:1fr} .ag-kpis{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:640px){ .ag-mes .d{min-height:64px; padding:3px} .ag-ev{font-size:.6rem; padding:1px 3px} .ag-card{flex-wrap:wrap} .ag-card .acoes{margin-left:0} }
 .arq-pasta{border:1px solid var(--line); border-radius:10px; margin-bottom:12px; overflow:hidden; background:var(--card)}
 .arq-cab{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 14px; background:var(--bg2); cursor:pointer}
 .arq-cab b{color:var(--navy)}
@@ -451,6 +536,31 @@ body.perfil-restrito .btn-reforco{display:none !important}
   </div>
 </div>
 
+<div id="ag-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:60; display:flex; align-items:center; justify-content:center; padding:20px">
+  <div class="card" style="max-width:600px; width:100%; margin:0; max-height:92vh; overflow-y:auto">
+    <h2 id="ag-m-titulo">Nova atividade</h2>
+    <div class="grid">
+      <div class="field" style="grid-column:1/-1"><label>Título</label><input id="ag-f-titulo" placeholder="Ex: Reunião com o ordenador de despesas" autocomplete="off"></div>
+      <div class="field"><label>Categoria</label><select id="ag-f-cat"></select></div>
+      <div class="field"><label>Tipo</label><select id="ag-f-tipo"><option value="compromisso">Compromisso (com horário)</option><option value="tarefa">Tarefa (com prazo para conclusão)</option></select></div>
+      <div class="field"><label id="ag-l-data">Data</label><input id="ag-f-data" type="date"></div>
+      <div class="field" id="ag-w-ini"><label>Hora de início</label><input id="ag-f-ini" type="time"></div>
+      <div class="field"><label id="ag-l-fim">Hora de término</label><input id="ag-f-fim" type="time"></div>
+      <div class="field"><label>Lembrete</label><select id="ag-f-lem"><option value="">Sem lembrete</option><option value="0">Na hora</option><option value="15">15 minutos antes</option><option value="60">1 hora antes</option><option value="1440">1 dia antes</option></select></div>
+      <div class="field" style="grid-column:1/-1"><label>Descrição</label><textarea id="ag-f-desc" rows="3" placeholder="Detalhes, local, observações..." style="width:100%; box-sizing:border-box; font:inherit; padding:8px; border:1.5px solid var(--line); border-radius:8px"></textarea></div>
+    </div>
+    <p id="ag-f-dica" style="color:var(--muted); font-size:.76rem; margin:6px 0 0">Deixe as horas em branco para uma atividade de dia todo.</p>
+    <div id="ag-f-origem" class="hidden" style="margin-top:8px; font-size:.78rem; color:var(--text-2)"></div>
+    <div id="msg-ag" style="margin-top:10px"></div>
+    <div class="actions" style="margin-top:14px">
+      <button class="primary" id="ag-salvar" type="button">Salvar</button>
+      <button id="ag-fechar" type="button">Cancelar</button>
+      <button class="danger hidden" id="ag-excluir" type="button" style="margin-left:auto">Excluir</button>
+    </div>
+  </div>
+</div>
+<div class="ag-toasts" id="ag-toasts"></div>
+
 <div id="reforco-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:60; display:flex; align-items:center; justify-content:center; padding:20px">
   <div class="card" style="max-width:520px; width:100%; margin:0; max-height:90vh; overflow-y:auto">
     <h2 id="rf-titulo">Reforçar empenho</h2>
@@ -487,6 +597,7 @@ body.perfil-restrito .btn-reforco{display:none !important}
   <button data-grupo="empenho">Empenho</button>
   <button data-grupo="controle">Controle</button>
   <button data-grupo="pedidos">Pedidos</button>
+  <button data-grupo="agenda">Agenda</button>
   <button data-grupo="atalhos">Atalhos</button>
   <button data-grupo="config">Configurações</button>
 </nav>
@@ -658,6 +769,7 @@ body.perfil-restrito .btn-reforco{display:none !important}
           <div class="field"><label>Obs</label><input id="ped-obs" placeholder="Observações"></div>
           <div class="field"><label>Contato (procurar por)</label><input id="ped-contato" placeholder="Nome(s) para contato"></div>
           <div class="field"><label>Data/hora limite para recebimento</label><input id="ped-prazo" placeholder="Ex: até sexta-feira, 14h"></div>
+          <div class="field"><label>Data e hora da entrega (lembrete na Agenda)</label><input id="ped-entrega" type="datetime-local"></div>
           <div class="field"><label>Assinatura 1</label><select id="ped-assin1"></select></div>
           <div class="field"><label>Assinatura 2</label><select id="ped-assin2"></select></div>
         </div>
@@ -751,6 +863,45 @@ body.perfil-restrito .btn-reforco{display:none !important}
       <h2>Documentos por empresa</h2>
       <input class="search" id="busca-doc" placeholder="Buscar por empresa ou nome do documento...">
       <div id="documentos-container"></div>
+    </div>
+  </section>
+
+  <section id="tab-agenda" class="tab hidden">
+    <div class="card">
+      <div class="ag-top">
+        <div class="ag-navd">
+          <button type="button" id="ag-ant" title="Anterior">‹</button>
+          <button type="button" id="ag-hoje">Hoje</button>
+          <button type="button" id="ag-prox" title="Próximo">›</button>
+          <span class="ag-titulo" id="ag-titulo"></span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+          <div class="ag-views" id="ag-views">
+            <button type="button" data-v="dia">Dia</button><button type="button" data-v="semana">Semana</button><button type="button" data-v="mes">Mês</button>
+          </div>
+          <button class="primary" type="button" id="ag-nova">+ Nova atividade</button>
+        </div>
+      </div>
+      <div class="ag-kpis" id="ag-kpis"></div>
+      <div class="ag-corpo">
+        <div style="min-width:0">
+          <div id="ag-centro"></div>
+          <div class="ag-leg" id="ag-leg"></div>
+        </div>
+        <div class="ag-lat">
+          <div class="card">
+            <div class="ag-mini-top"><button type="button" id="ag-mini-ant">‹</button><span id="ag-mini-tit"></span><button type="button" id="ag-mini-prox">›</button></div>
+            <div class="ag-mini" id="ag-mini"></div>
+            <div style="font-size:.68rem; color:var(--text-2); margin-top:8px">Azul mais escuro = dia com mais compromissos</div>
+            <div class="ag-filtros" id="ag-filtros" style="margin-top:10px"></div>
+            <div id="ag-notif-wrap" style="margin-top:8px"></div>
+          </div>
+          <div class="card">
+            <h3 style="font-family:var(--font-title); color:var(--navy); margin:0 0 4px; font-size:.98rem">Atrasadas e prazos</h3>
+            <div id="ag-prazos"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1042,6 +1193,11 @@ function assinaturaFromDoc(d){
   const r = d.data();
   return { id:d.id, nome:r.nome||'', posto:r.posto||'', funcao:r.funcao||'' };
 }
+function agendaFromDoc(d){ const r=d.data(); return { id:d.id, titulo:r.titulo||'', descricao:r.descricao||'', categoria:r.categoria||'tar',
+  tipo:r.tipo==='tarefa'?'tarefa':'compromisso', data:r.data||'', horaInicio:r.horaInicio||'', horaFim:r.horaFim||'', lembrete:(r.lembrete==null?'':String(r.lembrete)),
+  concluida:r.concluida===true, concluidaEm:Number(r.concluidaEm)||0, concluidaPorEmail:r.concluidaPorEmail||'', concluidaObs:r.concluidaObs||'',
+  origem:r.origem||'', pedidoId:r.pedidoId||'', numerosEmpenho:Array.isArray(r.numerosEmpenho)?r.numerosEmpenho:[],
+  criadoPorEmail:r.criadoPorEmail||'', criadoEm:Number(r.criadoEm)||0, alteradoPorEmail:r.alteradoPorEmail||'', alteradoEm:Number(r.alteradoEm)||0 }; }
 function atalhoFromDoc(d){ const r=d.data(); return { id:d.id, nome:r.nome||'', url:r.url||'', imagem:r.imagem||'', ativo:r.ativo!==false,
   criadoPorEmail:r.criadoPorEmail||'', criadoEm:Number(r.criadoEm)||0, alteradoPorEmail:r.alteradoPorEmail||'', alteradoEm:Number(r.alteradoEm)||0 }; }
 function arquivamentoFromDoc(d){ const r=d.data(); return { id:d.id, criadoEm:Number(r.criadoEm)||0, porEmail:r.porEmail||'',
@@ -1078,7 +1234,8 @@ let movimentos = [];
 let assinaturas = [];
 let pedidos = [];
 let arquivamentosPedidos = [];
-let atalhos = []; // atalhos para páginas externas (cadastro do administrador) // pastas do Histórico de Pedidos
+let atalhos = [];
+let agenda = []; // atividades da Agenda // atalhos para páginas externas (cadastro do administrador) // pastas do Histórico de Pedidos
 let documentos = [];
 let configOM = '';
 
@@ -1127,6 +1284,10 @@ async function carregarDados(){
   empresas = empresaSnap.docs.map(empresaFromDoc);
   assinaturas = assinaturaSnap.docs.map(assinaturaFromDoc);
   pedidos = pedidoSnap.docs.map(pedidoFromDoc);
+  try{
+    const agSnap = await getDocs(query(collection(db,'agenda'), where('userId','==',uidAtual)));
+    agenda = agSnap.docs.map(agendaFromDoc);
+  }catch(e){ console.error('Erro ao carregar a Agenda:', e.code, e.message); agenda = []; }
   try{
     const atSnap = await getDocs(collection(db,'atalhos'));
     atalhos = atSnap.docs.map(atalhoFromDoc);
@@ -1309,6 +1470,7 @@ async function mostrarApp(user){
   popularSelectEmpresaDoc(); renderDocumentos();
   renderSubnavUsuarios();
   abrirPainel();
+  setTimeout(agVerificarLembretes, 1500);
   return { sucesso:true };
 }
 function loginMsg(texto, ok){
@@ -1593,12 +1755,14 @@ function abrirTela(tab){
   if(tab==='precos') renderPrecos();
   if(tab==='arquivo-pedidos') renderArquivoPedidos();
   if(tab==='atalhos') renderAtalhos();
+  if(tab==='agenda') renderAgenda();
 }
 function abrirGrupo(grupo, tab){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.grupo===grupo));
   document.querySelectorAll('#submenu .submenu-grupo').forEach(g=>g.classList.toggle('hidden', g.dataset.grupo!==grupo));
   if(grupo==='config'){ abrirTela('config'); return; }
   if(grupo==='atalhos'){ abrirTela('atalhos'); return; }
+  if(grupo==='agenda'){ abrirTela('agenda'); return; }
   const grupoEl = document.querySelector('#submenu .submenu-grupo[data-grupo="'+grupo+'"]');
   const alvo = tab || (grupoEl.querySelector('.submenu-btn.active') || grupoEl.querySelector('.submenu-btn')).dataset.tab;
   grupoEl.querySelectorAll('.submenu-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===alvo));
@@ -2811,8 +2975,9 @@ document.getElementById('btn-baixar').addEventListener('click', async ()=>{
 
   await sincronizarStatusNE(ne);
   const finalizou = statusDoNE(ne)==='finalizado';
+  const lemOk = await concluirLembreteEntrega(ne, numeroNF);
   msg.className='msg ok'; msg.textContent=`Nota fiscal ${numeroNF} registrada: ${paraBaixar.length} item(ns) baixado(s) e saldo do empenho atualizado.` +
-    (finalizou ? ' O saldo do empenho chegou a zero: status alterado automaticamente para Finalizado.' : '');
+    (finalizou ? ' O saldo do empenho chegou a zero: status alterado automaticamente para Finalizado.' : '') + (lemOk ? ` ${lemOk}` : '');
   document.getElementById('nf-numero').value='';
   document.getElementById('nf-ne').value='';
   document.getElementById('nf-itens-wrap').classList.add('hidden');
@@ -3223,8 +3388,9 @@ async function registrarNFHF(ne, numeroNF, data, msg){
   await sincronizarStatusNE(ne);
   const finalizou = statusDoNE(ne)==='finalizado';
   msg.className='msg ok';
+  const lemOk = await concluirLembreteEntrega(ne, numeroNF);
   msg.textContent = `Nota fiscal ${numeroNF} registrada: ${fmtMoney(valor)} descontado(s) do empenho ${ne}. Saldo disponível: ${fmtMoney(h.saldo)}.` +
-    (finalizou ? ' O saldo chegou a zero: status alterado automaticamente para Finalizado.' : '');
+    (finalizou ? ' O saldo chegou a zero: status alterado automaticamente para Finalizado.' : '') + (lemOk ? ` ${lemOk}` : '');
   document.getElementById('nf-numero').value='';
   document.getElementById('nf-ne').value='';
   document.getElementById('nf-valor-hf').value='';
@@ -3752,6 +3918,7 @@ document.getElementById('btn-gerar-pedido').addEventListener('click', async ()=>
     obs: document.getElementById('ped-obs').value.trim(),
     contato: document.getElementById('ped-contato').value.trim(),
     prazoRecebimento: document.getElementById('ped-prazo').value.trim(),
+    ...(document.getElementById('ped-entrega').value ? { dataEntrega: document.getElementById('ped-entrega').value } : {}),
     assinatura1: assin1 ? {nome:assin1.nome, posto:assin1.posto, funcao:assin1.funcao} : null,
     assinatura2: assin2 ? {nome:assin2.nome, posto:assin2.posto, funcao:assin2.funcao} : null
   };
@@ -3760,12 +3927,14 @@ document.getElementById('btn-gerar-pedido').addEventListener('click', async ()=>
     const ref = await addDoc(collection(db,'pedidos'), { ...pedidoData, userId: uidDono(), ...responsavelAcao(), createdAt: Date.now() });
     pedidos.push({ id:ref.id, ...pedidoData, responsavelEmail: responsavelAcao().responsavelEmail, createdAt: Date.now(), arquivado:false });
     await registrarAuditoria('Gerou pedido', `Pedido ${pedidoData.numeroPedido} · ${pedidoData.empresaNome}`);
+    if(pedidoData.dataEntrega) await criarLembretePedido(ref.id, pedidoData);
   }catch(err){ msg.className='msg err'; msg.textContent='Erro ao salvar pedido: '+err.message; return; }
 
   try{
     const docPdf = gerarPDFPedido(pedidoData);
     window.open(docPdf.output('bloburl'), '_blank');
-    msg.className='msg ok'; msg.textContent=`Pedido ${numeroPedido} gerado com sucesso.`;
+    msg.className='msg ok'; msg.textContent=`Pedido ${numeroPedido} gerado com sucesso.` + (pedidoData.dataEntrega ? ` Lembrete de entrega criado na Agenda para ${fmtDataBR(pedidoData.dataEntrega.slice(0,10))} às ${pedidoData.dataEntrega.slice(11,16)}.` : '');
+    document.getElementById('ped-entrega').value = '';
   }catch(err){
     console.error('Erro ao gerar PDF:', err);
     msg.className='msg err'; msg.textContent='Pedido salvo, mas houve erro ao gerar o PDF: '+err.message;
@@ -3814,6 +3983,7 @@ window.removerPedido = async function(id){
   try{ await deleteDoc(doc(db,'pedidos',id)); }
   catch(err){ alert('Erro ao excluir: '+err.message); return; }
   await registrarAuditoria('Excluiu pedido', pedExcl ? `Pedido ${pedExcl.numeroPedido} · ${pedExcl.empresaNome}` : id);
+  await removerLembretesDoPedido(id);
   pedidos = pedidos.filter(p=>p.id!==id);
   renderPedidos();
 };
@@ -4069,6 +4239,333 @@ window.removerDocumento = async function(id){
   documentos = documentos.filter(d=>d.id!==id);
   renderDocumentos();
 };
+
+// ================= AGENDA =================
+const AG_CATS = { reu:{nome:'Reunião', cor:'var(--ag-reu)'}, pra:{nome:'Prazo', cor:'var(--ag-pra)'}, tar:{nome:'Tarefa', cor:'var(--ag-tar)'},
+  ent:{nome:'Entrega/Recebimento', cor:'var(--ag-ent)'}, pes:{nome:'Pessoal', cor:'var(--ag-pes)'} };
+const AG_MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const AG_DIAS = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+const AG_DOW = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+let agView = 'mes', agRef = null, agMiniRef = null, agEditId = null, agSalvando = false;
+let agFiltro = { reu:true, pra:true, tar:true, ent:true, pes:true, concluidas:true };
+try{ const sv = JSON.parse(localStorage.getItem('farol-agenda-pref')||'null'); if(sv){ if(['dia','semana','mes'].includes(sv.view)) agView = sv.view; if(sv.filtro) agFiltro = { ...agFiltro, ...sv.filtro }; } }catch(e){}
+function agSalvarPref(){ try{ localStorage.setItem('farol-agenda-pref', JSON.stringify({ view:agView, filtro:agFiltro })); }catch(e){} }
+function agISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function agDate(iso){ const [y,m,d] = iso.split('-').map(Number); return new Date(y, m-1, d); }
+function agAdd(iso, n){ const d = agDate(iso); d.setDate(d.getDate()+n); return agISO(d); }
+function agInicioSemana(iso){ const d = agDate(iso); d.setDate(d.getDate()-d.getDay()); return agISO(d); }
+function agMin(h){ if(!h) return null; const [a,b] = h.split(':').map(Number); return a*60+b; }
+// momento de referência para atraso/ordem: tarefa = prazo (hora limite ou fim do dia); compromisso = início (ou fim do dia)
+function agMomento(a){ const hm = a.tipo==='tarefa' ? (a.horaFim||a.horaInicio||'23:59') : (a.horaInicio||a.horaFim||'23:59'); const d = agDate(a.data); const [h,m]=hm.split(':').map(Number); d.setHours(h,m,0,0); return d.getTime(); }
+function agFimMomento(a){ const hm = a.horaFim||a.horaInicio||'23:59'; const d = agDate(a.data); const [h,m]=hm.split(':').map(Number); d.setHours(h,m,0,0); return d.getTime(); }
+function agAtrasada(a){ return !a.concluida && a.tipo==='tarefa' && agMomento(a) < Date.now(); }
+function agSituacao(a){
+  if(a.concluida) return ['ok','Concluída'];
+  if(agAtrasada(a)) return ['atr','Atrasada'];
+  if(a.tipo==='compromisso' && agFimMomento(a) < Date.now()) return ['pas','Realizado?'];
+  if(a.data > isoHoje()) return ['fut','Futuro'];
+  return ['pen','Pendente'];
+}
+function agHorario(a){
+  if(a.tipo==='tarefa') return a.horaFim ? `Até ${a.horaFim}` : (a.horaInicio ? `Até ${a.horaInicio}` : 'Dia todo');
+  if(a.horaInicio && a.horaFim) return `${a.horaInicio}–${a.horaFim}`;
+  return a.horaInicio || (a.horaFim ? `Até ${a.horaFim}` : 'Dia todo');
+}
+function agVisivel(a){ return agFiltro[a.categoria]!==false && (agFiltro.concluidas || !a.concluida); }
+function agOrdem(a,b){ const ha = a.horaInicio||a.horaFim||'', hb = b.horaInicio||b.horaFim||''; if(!ha && hb) return -1; if(ha && !hb) return 1; return ha.localeCompare(hb) || a.titulo.localeCompare(b.titulo,'pt-BR'); }
+function agDoDia(iso){ return agenda.filter(a=>a.data===iso && agVisivel(a)).sort(agOrdem); }
+function agRotuloLembrete(v){ return ({'0':'na hora','15':'15 min antes','60':'1 hora antes','1440':'1 dia antes'})[v] || ''; }
+function agEsc(t){ return escHtml(t); }
+
+function renderAgenda(){
+  if(!document.getElementById('tab-agenda')) return;
+  if(!agRef) agRef = isoHoje();
+  if(!agMiniRef) agMiniRef = agRef.slice(0,7);
+  document.querySelectorAll('#ag-views button').forEach(b=>b.classList.toggle('on', b.dataset.v===agView));
+  const d = agDate(agRef);
+  let titulo = '';
+  if(agView==='mes') titulo = `${AG_MESES[d.getMonth()][0].toUpperCase()+AG_MESES[d.getMonth()].slice(1)} de ${d.getFullYear()}`;
+  else if(agView==='semana'){ const i = agDate(agInicioSemana(agRef)), f = agDate(agAdd(agInicioSemana(agRef),6));
+    titulo = i.getMonth()===f.getMonth() ? `${i.getDate()} a ${f.getDate()} de ${AG_MESES[f.getMonth()]} de ${f.getFullYear()}` : `${i.getDate()}/${String(i.getMonth()+1).padStart(2,'0')} a ${f.getDate()}/${String(f.getMonth()+1).padStart(2,'0')}/${f.getFullYear()}`; }
+  else titulo = `${AG_DIAS[d.getDay()][0].toUpperCase()+AG_DIAS[d.getDay()].slice(1)}, ${d.getDate()} de ${AG_MESES[d.getMonth()]} de ${d.getFullYear()}`;
+  document.getElementById('ag-titulo').textContent = titulo;
+  // indicadores
+  const hoje = isoHoje(), mesRef = agRef.slice(0,7);
+  const kHoje = agenda.filter(a=>a.data===hoje).length;
+  const kPend = agenda.filter(a=>!a.concluida && !agAtrasada(a) && (a.data>=hoje || a.tipo==='tarefa')).length;
+  const kAtr = agenda.filter(agAtrasada).length;
+  const kOk = agenda.filter(a=>a.concluida && a.data.slice(0,7)===mesRef).length;
+  document.getElementById('ag-kpis').innerHTML = [['Hoje',kHoje,'var(--blue)'],['Pendentes',kPend,'#F2B33D'],['Atrasadas',kAtr,'#B23A3A'],[`Concluídas em ${fmtRef(mesRef)}`,kOk,'#2E7D5B']]
+    .map(([r,v,c])=>`<div class="ag-k" style="border-left-color:${c}"><div class="r">${r}</div><div class="v">${v}</div></div>`).join('');
+  document.getElementById('ag-leg').innerHTML = Object.values(AG_CATS).map(c=>`<span><i style="background:${c.cor}"></i>${c.nome}</span>`).join('') + '<span><i style="background:#ccc"></i>Concluída (riscada)</span>';
+  if(agView==='mes') agRenderMes(); else if(agView==='semana') agRenderSemana(); else agRenderDia();
+  agRenderMini(); agRenderFiltros(); agRenderPrazos();
+}
+function agRenderMes(){
+  const d = agDate(agRef); const primeiro = new Date(d.getFullYear(), d.getMonth(), 1);
+  let ini = agISO(primeiro); ini = agAdd(ini, -primeiro.getDay());
+  const ultimo = new Date(d.getFullYear(), d.getMonth()+1, 0);
+  const semanas = Math.ceil((primeiro.getDay() + ultimo.getDate())/7);
+  let h = AG_DOW.map(x=>`<div class="dow">${x}</div>`).join('');
+  for(let i=0;i<semanas*7;i++){
+    const iso = agAdd(ini,i); const dd = agDate(iso);
+    const fora = dd.getMonth()!==d.getMonth();
+    const lista = agDoDia(iso);
+    const evs = lista.slice(0,3).map(a=>`<span class="ag-ev${a.concluida?' feito':''}${agAtrasada(a)?' atr':''}" style="background:${AG_CATS[a.categoria].cor}" title="${agEsc(agHorario(a)+' · '+a.titulo)}">${a.horaInicio&&a.tipo!=='tarefa'?a.horaInicio+' ':''}${agEsc(a.titulo)}</span>`).join('');
+    h += `<div class="d${fora?' fora':''}${iso===isoHoje()?' hoje':''}" data-iso="${iso}"><span class="n">${dd.getDate()}</span>${lista.length>=4?`<span class="ag-dens" title="${lista.length} atividades">${lista.length}</span>`:''}${evs}${lista.length>3?`<span class="ag-mais">+${lista.length-3} mais</span>`:''}</div>`;
+  }
+  document.getElementById('ag-centro').innerHTML = `<div class="ag-mes">${h}</div>`;
+}
+function agRenderSemana(){
+  const ini = agInicioSemana(agRef); const dias = [0,1,2,3,4,5,6].map(i=>agAdd(ini,i));
+  const doDia = dias.map(agDoDia);
+  const comHora = doDia.map(l=>l.filter(a=>a.horaInicio && a.tipo==='compromisso'));
+  const semHora = doDia.map(l=>l.filter(a=>!(a.horaInicio && a.tipo==='compromisso')));
+  let hMin = 7, hMax = 19;
+  comHora.flat().forEach(a=>{ const i=agMin(a.horaInicio), f=agMin(a.horaFim)||i+60; hMin=Math.min(hMin, Math.floor(i/60)); hMax=Math.max(hMax, Math.ceil(f/60)); });
+  hMax = Math.min(24, Math.max(hMax, hMin+1));
+  const HH = 44;
+  let g = '<div class="cab" style="cursor:default"></div>' + dias.map(iso=>{ const dd=agDate(iso); return `<div class="cab${iso===isoHoje()?' hoje':''}" data-iso="${iso}">${AG_DOW[dd.getDay()]}<small>${String(dd.getDate()).padStart(2,'0')}/${String(dd.getMonth()+1).padStart(2,'0')}</small></div>`; }).join('');
+  g += '<div class="tdl">Dia todo / prazos</div>' + dias.map((iso,i)=>`<div class="td${iso===isoHoje()?' hj':''}">${semHora[i].map(a=>`<div class="ag-chip${a.concluida?' feito':''}" data-id="${a.id}" style="background:${AG_CATS[a.categoria].cor}" title="${agEsc(agHorario(a)+' · '+a.titulo)}">${a.tipo==='tarefa'&&(a.horaFim||a.horaInicio)?(a.horaFim||a.horaInicio)+' ':''}${agEsc(a.titulo)}</div>`).join('')}</div>`).join('');
+  for(let h=hMin; h<hMax; h++){ g += `<div class="h">${String(h).padStart(2,'0')}:00</div>` + dias.map(iso=>`<div class="c${iso===isoHoje()?' hj':''}" data-iso="${iso}" data-h="${h}"></div>`).join(''); }
+  document.getElementById('ag-centro').innerHTML = `<div class="ag-semwrap"><div class="ag-sem" id="ag-sem">${g}</div></div>`;
+  // posiciona os blocos depois de montar a grade (medidas reais)
+  const sem = document.getElementById('ag-sem'); if(!sem) return;
+  const cel0 = sem.querySelector(`.c[data-h="${hMin}"]`); if(!cel0) return;
+  const topo0 = cel0.offsetTop;
+  dias.forEach((iso,i)=>{
+    const lista = comHora[i].map(a=>({a, ini:agMin(a.horaInicio), fim:Math.max(agMin(a.horaFim)||agMin(a.horaInicio)+60, agMin(a.horaInicio)+20)})).sort((x,y)=>x.ini-y.ini);
+    // colunas para sobreposição
+    const grupos = []; let atual = null;
+    lista.forEach(x=>{ if(!atual || x.ini >= atual.fim){ atual = { itens:[], fim:x.fim }; grupos.push(atual); } atual.itens.push(x); atual.fim = Math.max(atual.fim, x.fim); });
+    const cel = sem.querySelector(`.c[data-iso="${iso}"][data-h="${hMin}"]`); if(!cel) return;
+    grupos.forEach(gr=>{
+      const cols = []; gr.itens.forEach(x=>{ let c = cols.findIndex(f=>f<=x.ini); if(c<0){ c=cols.length; cols.push(0); } cols[c]=x.fim; x.col=c; });
+      gr.itens.forEach(x=>{
+        const w = (cel.offsetWidth-6)/cols.length;
+        const el = document.createElement('div');
+        el.className = 'ag-blk'+(x.a.concluida?' feito':''); el.dataset.id = x.a.id;
+        el.style.background = AG_CATS[x.a.categoria].cor;
+        el.style.top = (topo0 + (x.ini - hMin*60)/60*HH + 1)+'px';
+        el.style.height = Math.max(18, (x.fim-x.ini)/60*HH - 3)+'px';
+        el.style.left = (cel.offsetLeft + 3 + x.col*w)+'px'; el.style.width = (w-3)+'px';
+        el.title = `${agHorario(x.a)} · ${x.a.titulo}`;
+        el.innerHTML = `<b>${agEsc(x.a.titulo)}</b>${agHorario(x.a)}`;
+        sem.appendChild(el);
+      });
+    });
+  });
+  // linha da hora atual
+  const hojeIdx = dias.indexOf(isoHoje());
+  if(hojeIdx>=0){ const agora = new Date(); const m = agora.getHours()*60+agora.getMinutes();
+    if(m>=hMin*60 && m<=hMax*60){ const ln = document.createElement('div'); ln.className='ag-agora'; ln.style.top=(topo0+(m-hMin*60)/60*HH)+'px'; ln.style.left=cel0.offsetLeft+'px'; ln.style.right='0'; sem.appendChild(ln); } }
+}
+function agCardHtml(a){
+  const [sc,sn] = agSituacao(a); const cat = AG_CATS[a.categoria];
+  const extra = [cat.nome, a.descricao ? agEsc(a.descricao) : '', a.lembrete!=='' ? `🔔 ${agRotuloLembrete(a.lembrete)}` : '', a.concluida && a.concluidaObs ? agEsc(a.concluidaObs) : ''].filter(Boolean).join(' · ');
+  return `<div class="ag-card${a.concluida?' ag-feito':''}" style="border-left-color:${cat.cor}">
+    <input type="checkbox" class="ag-chk" data-conc="${a.id}" ${a.concluida?'checked':''} title="Marcar como concluída">
+    <span class="hr">${agHorario(a)}</span>
+    <div style="min-width:0"><span class="tit">${agEsc(a.titulo)}</span><span class="ag-tag ${sc}">${sn}</span><div class="meta">${extra}</div></div>
+    <span class="acoes"><button type="button" data-ed="${a.id}">✏️ Editar</button><button type="button" class="danger" data-del="${a.id}">Excluir</button></span></div>`;
+}
+function agRenderDia(){
+  const lista = agDoDia(agRef);
+  const atr = lista.filter(agAtrasada).length, ok = lista.filter(a=>a.concluida).length;
+  document.getElementById('ag-centro').innerHTML = `<div class="ag-gd">${agRef===isoHoje()?'Hoje — ':''}${AG_DIAS[agDate(agRef).getDay()]}, ${fmtDataBR(agRef).slice(0,5)}<span>${lista.length} atividade(s)${atr?` · ${atr} atrasada(s)`:''}${ok?` · ${ok} concluída(s)`:''}</span></div>
+    ${lista.length ? lista.map(agCardHtml).join('') : '<div class="empty">Nenhuma atividade neste dia.</div>'}
+    <button class="primary" type="button" id="ag-add-dia" style="margin-top:12px">+ Adicionar neste dia</button>`;
+}
+function agRenderMini(){
+  const [y,m] = agMiniRef.split('-').map(Number);
+  document.getElementById('ag-mini-tit').textContent = `${AG_MESES[m-1][0].toUpperCase()+AG_MESES[m-1].slice(1)} ${y}`;
+  const primeiro = new Date(y, m-1, 1); const ini = agAdd(agISO(primeiro), -primeiro.getDay());
+  const ultimo = new Date(y, m, 0).getDate(); const semanas = Math.ceil((primeiro.getDay()+ultimo)/7);
+  let h = ['D','S','T','Q','Q','S','S'].map(x=>`<div class="dw">${x}</div>`).join('');
+  for(let i=0;i<semanas*7;i++){
+    const iso = agAdd(ini,i); const dd = agDate(iso); const fora = dd.getMonth()!==m-1;
+    const n = agenda.filter(a=>a.data===iso && !a.concluida).length;
+    const lv = fora||!n ? '' : (n===1?' l1':(n<4?' l2':' l3'));
+    h += `<div class="x${fora?' f':lv}${iso===isoHoje()?' hj':''}${iso===agRef?' sel':''}" data-iso="${iso}" title="${n} atividade(s) pendente(s)">${dd.getDate()}</div>`;
+  }
+  document.getElementById('ag-mini').innerHTML = h;
+}
+function agRenderFiltros(){
+  document.getElementById('ag-filtros').innerHTML = Object.entries(AG_CATS).map(([k,c])=>`<label><input type="checkbox" data-f="${k}" ${agFiltro[k]!==false?'checked':''}><i style="background:${c.cor}"></i>${c.nome}</label>`).join('')
+    + `<label><input type="checkbox" data-f="concluidas" ${agFiltro.concluidas?'checked':''}>Mostrar concluídas</label>`;
+  const nw = document.getElementById('ag-notif-wrap');
+  nw.innerHTML = ('Notification' in window && Notification.permission==='default') ? '<button type="button" id="ag-notif" style="font-size:.74rem; padding:4px 10px">🔔 Ativar avisos do navegador</button>' : '';
+}
+function agRenderPrazos(){
+  const hoje = isoHoje(), lim = agAdd(hoje, 30);
+  const atr = agenda.filter(agAtrasada).sort((a,b)=>agMomento(a)-agMomento(b));
+  const prox = agenda.filter(a=>!a.concluida && !agAtrasada(a) && (a.tipo==='tarefa' || a.categoria==='pra' || a.categoria==='ent') && a.data>=hoje && a.data<=lim).sort((a,b)=>agMomento(a)-agMomento(b));
+  const lista = [...atr, ...prox].slice(0,10);
+  document.getElementById('ag-prazos').innerHTML = lista.length ? lista.map(a=>{ const [sc,sn]=agSituacao(a); return `<div class="ag-it"><span class="barra-c" style="background:${AG_CATS[a.categoria].cor}"></span>
+    <input type="checkbox" class="ag-chk" data-conc="${a.id}" title="Marcar como concluída"><div style="min-width:0"><b data-ed="${a.id}">${agEsc(a.titulo)}</b><span class="ag-tag ${sc}">${sn}</span>
+    <div class="meta">${a.data===hoje?'Hoje':fmtDataBR(a.data).slice(0,5)} · ${agHorario(a)}</div></div></div>`; }).join('')
+    : '<div style="font-size:.8rem; color:var(--text-2); padding:6px 0">Nada atrasado nem com prazo nos próximos 30 dias.</div>';
+}
+// navegação
+document.getElementById('ag-views').addEventListener('click', ev=>{ const b = ev.target.closest('button[data-v]'); if(!b) return; agView = b.dataset.v; agSalvarPref(); renderAgenda(); });
+function agMover(dir){ if(agView==='mes'){ const d = agDate(agRef); agRef = agISO(new Date(d.getFullYear(), d.getMonth()+dir, 1)); } else agRef = agAdd(agRef, agView==='semana'?7*dir:dir); agMiniRef = agRef.slice(0,7); renderAgenda(); }
+document.getElementById('ag-ant').addEventListener('click', ()=>agMover(-1));
+document.getElementById('ag-prox').addEventListener('click', ()=>agMover(1));
+document.getElementById('ag-hoje').addEventListener('click', ()=>{ agRef = isoHoje(); agMiniRef = agRef.slice(0,7); renderAgenda(); });
+document.getElementById('ag-mini-ant').addEventListener('click', ()=>{ const [y,m]=agMiniRef.split('-').map(Number); agMiniRef = agISO(new Date(y,m-2,1)).slice(0,7); agRenderMini(); });
+document.getElementById('ag-mini-prox').addEventListener('click', ()=>{ const [y,m]=agMiniRef.split('-').map(Number); agMiniRef = agISO(new Date(y,m,1)).slice(0,7); agRenderMini(); });
+document.getElementById('ag-mini').addEventListener('click', ev=>{ const x = ev.target.closest('[data-iso]'); if(!x) return; agRef = x.dataset.iso; agView = 'dia'; agSalvarPref(); renderAgenda(); });
+document.getElementById('ag-filtros').addEventListener('change', ev=>{ const c = ev.target.closest('input[data-f]'); if(!c) return; agFiltro[c.dataset.f] = c.checked; agSalvarPref(); renderAgenda(); });
+document.getElementById('ag-notif-wrap').addEventListener('click', async ev=>{ if(!ev.target.closest('#ag-notif')) return; try{ await Notification.requestPermission(); }catch(e){} agRenderFiltros(); });
+document.getElementById('tab-agenda').addEventListener('click', ev=>{
+  const ed = ev.target.closest('[data-ed]'); if(ed){ agAbrirModal(ed.dataset.ed); return; }
+  const del = ev.target.closest('[data-del]'); if(del){ agExcluir(del.dataset.del); return; }
+  if(ev.target.closest('#ag-add-dia')){ agAbrirModal(null, agRef); return; }
+  const blk = ev.target.closest('.ag-blk,.ag-chip'); if(blk){ agAbrirModal(blk.dataset.id); return; }
+  if(ev.target.closest('.ag-chk')) return;
+  const dm = ev.target.closest('.ag-mes .d[data-iso]'); if(dm){ agRef = dm.dataset.iso; agView='dia'; agSalvarPref(); renderAgenda(); return; }
+  const cab = ev.target.closest('.ag-sem .cab[data-iso]'); if(cab){ agRef = cab.dataset.iso; agView='dia'; agSalvarPref(); renderAgenda(); return; }
+  const cel = ev.target.closest('.ag-sem .c[data-iso]'); if(cel){ agAbrirModal(null, cel.dataset.iso, String(cel.dataset.h).padStart(2,'0')+':00'); return; }
+});
+document.getElementById('tab-agenda').addEventListener('change', async ev=>{
+  const c = ev.target.closest('.ag-chk[data-conc]'); if(!c) return;
+  await agMarcar(c.dataset.conc, c.checked);
+});
+window.addEventListener('resize', ()=>{ if(agView==='semana' && !document.getElementById('tab-agenda').classList.contains('hidden')) agRenderSemana(); });
+
+async function agMarcar(id, feito, obs){
+  const a = agenda.find(x=>x.id===id); if(!a) return false;
+  const email = (usuarioAtual.email||'').toLowerCase(); const agora = Date.now();
+  const dados = feito ? { concluida:true, concluidaEm:agora, concluidaPorUid:usuarioAtual.uid, concluidaPorEmail:email, concluidaObs:obs||'' }
+                      : { concluida:false, concluidaEm:0, concluidaPorUid:'', concluidaPorEmail:'', concluidaObs:'' };
+  try{ await updateDoc(doc(db,'agenda',id), { ...dados, alteradoPorUid:usuarioAtual.uid, alteradoPorEmail:email, alteradoEm:agora }); }
+  catch(err){ alert('Erro ao atualizar a atividade: '+err.message); renderAgenda(); return false; }
+  Object.assign(a, { concluida:dados.concluida, concluidaEm:dados.concluidaEm, concluidaPorEmail:dados.concluidaPorEmail, concluidaObs:dados.concluidaObs, alteradoPorEmail:email, alteradoEm:agora });
+  if(!document.getElementById('tab-agenda').classList.contains('hidden')) renderAgenda();
+  return true;
+}
+// modal
+function msgAg(t, ok){ const m=document.getElementById('msg-ag'); m.className = t ? (ok?'msg ok':'msg err') : ''; m.textContent = t||''; }
+function agAjustarTipo(){
+  const tarefa = document.getElementById('ag-f-tipo').value==='tarefa';
+  document.getElementById('ag-w-ini').classList.toggle('hidden', tarefa);
+  document.getElementById('ag-l-data').textContent = tarefa ? 'Prazo (data)' : 'Data';
+  document.getElementById('ag-l-fim').textContent = tarefa ? 'Hora limite (opcional)' : 'Hora de término';
+  document.getElementById('ag-f-dica').textContent = tarefa ? 'A tarefa fica atrasada se não for concluída até o prazo.' : 'Deixe as horas em branco para uma atividade de dia todo.';
+}
+document.getElementById('ag-f-tipo').addEventListener('change', agAjustarTipo);
+document.getElementById('ag-f-cat').innerHTML = Object.entries(AG_CATS).map(([k,c])=>`<option value="${k}">${c.nome}</option>`).join('');
+function agAbrirModal(id, dataIso, hora){
+  agEditId = id || null; msgAg('');
+  const a = id ? agenda.find(x=>x.id===id) : null;
+  if(id && !a) return;
+  document.getElementById('ag-m-titulo').textContent = a ? 'Editar atividade' : 'Nova atividade';
+  document.getElementById('ag-f-titulo').value = a ? a.titulo : '';
+  document.getElementById('ag-f-cat').value = a ? a.categoria : 'reu';
+  document.getElementById('ag-f-tipo').value = a ? a.tipo : 'compromisso';
+  document.getElementById('ag-f-data').value = a ? a.data : (dataIso || agRef || isoHoje());
+  document.getElementById('ag-f-ini').value = a ? a.horaInicio : (hora||'');
+  document.getElementById('ag-f-fim').value = a ? a.horaFim : (hora ? String(Number(hora.slice(0,2))+1).padStart(2,'0')+':00' : '');
+  document.getElementById('ag-f-lem').value = a ? a.lembrete : '';
+  document.getElementById('ag-f-desc').value = a ? a.descricao : '';
+  const og = document.getElementById('ag-f-origem');
+  if(a && a.origem==='pedido'){ og.textContent = 'Lembrete criado automaticamente por um Pedido de Gêneros. Será concluído sozinho quando a nota fiscal do empenho for registrada.'; og.classList.remove('hidden'); } else og.classList.add('hidden');
+  document.getElementById('ag-excluir').classList.toggle('hidden', !a);
+  agAjustarTipo();
+  document.getElementById('ag-modal').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('ag-f-titulo').focus(), 30);
+}
+document.getElementById('ag-nova').addEventListener('click', ()=>agAbrirModal(null, agView==='dia'?agRef:(agRef>=isoHoje()&&agView!=='mes'?agRef:isoHoje())));
+document.getElementById('ag-fechar').addEventListener('click', ()=>{ document.getElementById('ag-modal').classList.add('hidden'); agEditId=null; });
+document.getElementById('ag-excluir').addEventListener('click', ()=>{ if(agEditId) agExcluir(agEditId, true); });
+document.getElementById('ag-salvar').addEventListener('click', async ()=>{
+  if(agSalvando) return;
+  const titulo = document.getElementById('ag-f-titulo').value.trim();
+  const categoria = document.getElementById('ag-f-cat').value;
+  const tipo = document.getElementById('ag-f-tipo').value==='tarefa' ? 'tarefa' : 'compromisso';
+  const data = document.getElementById('ag-f-data').value;
+  let horaInicio = tipo==='tarefa' ? '' : document.getElementById('ag-f-ini').value;
+  const horaFim = document.getElementById('ag-f-fim').value;
+  const lembrete = document.getElementById('ag-f-lem').value;
+  const descricao = document.getElementById('ag-f-desc').value.trim();
+  if(!titulo){ msgAg('Informe o título.', false); return; }
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data)){ msgAg(tipo==='tarefa'?'Informe o prazo.':'Informe a data.', false); return; }
+  if(tipo==='compromisso' && horaInicio && horaFim && horaFim <= horaInicio){ msgAg('A hora de término deve ser depois da hora de início.', false); return; }
+  if(tipo==='compromisso' && !horaInicio && horaFim){ msgAg('Informe também a hora de início, ou deixe as duas em branco (dia todo).', false); return; }
+  const email = (usuarioAtual.email||'').toLowerCase(); const agora = Date.now();
+  const base = { titulo, categoria, tipo, data, horaInicio, horaFim, lembrete, descricao };
+  agSalvando = true; const btn = document.getElementById('ag-salvar'); btn.disabled = true;
+  try{
+    if(agEditId){
+      const a = agenda.find(x=>x.id===agEditId);
+      await updateDoc(doc(db,'agenda',agEditId), { ...base, alteradoPorUid:usuarioAtual.uid, alteradoPorEmail:email, alteradoEm:agora });
+      Object.assign(a, base, { alteradoPorEmail:email, alteradoEm:agora });
+      agLembreteLimpar(agEditId);
+    } else {
+      const dados = { ...base, userId:uidDono(), concluida:false, origem:'manual', criadoPorUid:usuarioAtual.uid, criadoPorEmail:email, criadoEm:agora };
+      const ref = await addDoc(collection(db,'agenda'), dados);
+      agenda.push(agendaFromDoc({ id:ref.id, data:()=>dados }));
+    }
+  }catch(err){ msgAg('Erro ao salvar: '+err.message, false); return; }
+  finally{ agSalvando = false; btn.disabled = false; }
+  document.getElementById('ag-modal').classList.add('hidden'); agEditId = null;
+  agRef = data; agMiniRef = data.slice(0,7);
+  renderAgenda(); agVerificarLembretes();
+});
+async function agExcluir(id, doModal){
+  const a = agenda.find(x=>x.id===id); if(!a) return;
+  if(!confirm(`Excluir a atividade "${a.titulo}"?`)) return;
+  try{ await deleteDoc(doc(db,'agenda',id)); }catch(err){ alert('Erro ao excluir: '+err.message); return; }
+  agenda = agenda.filter(x=>x.id!==id);
+  if(doModal){ document.getElementById('ag-modal').classList.add('hidden'); agEditId = null; }
+  renderAgenda();
+}
+// lembrete automático do Pedido de Gêneros
+async function criarLembretePedido(pedidoId, p){
+  const [dataE, horaE] = p.dataEntrega.split('T');
+  const nes = String(p.numeroEmpenho||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const dados = { userId:uidDono(), titulo:`Entrega — Pedido ${p.numeroPedido} · ${p.empresaNome}`, categoria:'ent', tipo:'compromisso',
+    data:dataE, horaInicio:(horaE||'').slice(0,5), horaFim:'', lembrete:'0',
+    descricao:`Empenho(s): ${nes.join(', ')||'-'} · Valor ${fmtMoney(p.valorTotal)}${p.prazoRecebimento?' · '+p.prazoRecebimento:''}`,
+    concluida:false, origem:'pedido', pedidoId, numerosEmpenho:nes,
+    criadoPorUid:usuarioAtual.uid, criadoPorEmail:(usuarioAtual.email||'').toLowerCase(), criadoEm:Date.now() };
+  try{ const ref = await addDoc(collection(db,'agenda'), dados); agenda.push(agendaFromDoc({ id:ref.id, data:()=>dados })); }
+  catch(err){ console.error('Erro ao criar o lembrete do pedido:', err); }
+}
+// conclui o lembrete de entrega pendente mais antigo ligado ao empenho da nota fiscal
+async function concluirLembreteEntrega(ne, numeroNF){
+  const cand = agenda.filter(a=>a.origem==='pedido' && !a.concluida && a.numerosEmpenho.includes(ne)).sort((a,b)=>agMomento(a)-agMomento(b));
+  if(!cand.length) return '';
+  const a = cand[0];
+  const ok = await agMarcar(a.id, true, `Concluído automaticamente pela NF ${numeroNF}`);
+  return ok ? `Lembrete "${a.titulo}" concluído na Agenda.` : '';
+}
+async function removerLembretesDoPedido(pedidoId){
+  const lst = agenda.filter(a=>a.origem==='pedido' && a.pedidoId===pedidoId && !a.concluida);
+  for(const a of lst){ try{ await deleteDoc(doc(db,'agenda',a.id)); agenda = agenda.filter(x=>x.id!==a.id); }catch(e){ console.error('Erro ao remover lembrete do pedido:', e); } }
+}
+// lembretes: aviso na tela (e no navegador, se permitido)
+function agLembreteChave(id){ return 'farol-lem-'+id; }
+function agLembreteLimpar(id){ try{ localStorage.removeItem(agLembreteChave(id)); }catch(e){} }
+function agVerificarLembretes(){
+  if(!usuarioAtual) return;
+  const agora = Date.now(); const box = document.getElementById('ag-toasts'); if(!box) return;
+  agenda.filter(a=>a.lembrete!=='' && !a.concluida).forEach(a=>{
+    const quando = agMomento(a) - Number(a.lembrete)*60000;
+    if(quando > agora || agMomento(a) < agora - 12*3600000) return;
+    let visto = null; try{ visto = localStorage.getItem(agLembreteChave(a.id)); }catch(e){}
+    const marca = a.data+'|'+agHorario(a);
+    if(visto===marca || box.querySelector(`[data-lem="${a.id}"]`)) return;
+    const t = document.createElement('div'); t.className='ag-toast'; t.dataset.lem = a.id;
+    t.innerHTML = `<b>🔔 ${agEsc(a.titulo)}</b>${a.data===isoHoje()?'Hoje':fmtDataBR(a.data)} · ${agHorario(a)}<div class="bts"><button type="button" data-a="ver">Ver na Agenda</button><button type="button" data-a="ok">OK</button></div>`;
+    t.addEventListener('click', ev=>{ const b = ev.target.closest('button'); if(!b) return;
+      try{ localStorage.setItem(agLembreteChave(a.id), marca); }catch(e){}
+      t.remove(); if(b.dataset.a==='ver'){ agRef = a.data; agView='dia'; abrirGrupo('agenda'); } });
+    box.appendChild(t);
+    try{ if('Notification' in window && Notification.permission==='granted') new Notification('FAROL · Lembrete', { body:`${a.titulo} — ${agHorario(a)}` }); }catch(e){}
+  });
+}
+setInterval(agVerificarLembretes, 60000);
 
 // ---- Atalhos ----
 function escHtml(t){ return String(t==null?'':t).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
