@@ -186,6 +186,14 @@ body.perfil-restrito button[onclick^="removerAssinatura"], body.perfil-restrito 
 body.perfil-restrito .btn-cel-renomear, body.perfil-restrito .btn-cel-excluir{display:none !important}
 .aviso-restrito{margin:0; padding:9px 24px; background:var(--bg2); border-bottom:1px solid var(--line); color:var(--navy); font-size:.82rem}
 .resp-acao{color:var(--text-2); font-size:.78rem}
+.ped-ciclo-top{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px}
+.ped-ciclo-top h2{margin:0}
+.arq-pasta{border:1px solid var(--line); border-radius:10px; margin-bottom:12px; overflow:hidden; background:var(--card)}
+.arq-cab{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 14px; background:var(--bg2); cursor:pointer}
+.arq-cab b{color:var(--navy)}
+.arq-cab small{color:var(--text-2)}
+.arq-corpo{padding:0}
+.arq-corpo.hidden{display:none}
 /* ---- Painel (dashboard) ---- */
 header h1.ir-painel{cursor:pointer}
 .dash-top{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:8px; margin-bottom:14px}
@@ -469,6 +477,7 @@ body.perfil-restrito .btn-reforco{display:none !important}
   <div class="submenu-grupo hidden" data-grupo="pedidos">
     <button class="submenu-btn active" data-tab="pedidos" type="button">Novo Pedido de Gêneros</button>
     <button class="submenu-btn" data-tab="precos" type="button">Tabela Mensal de Preços</button>
+    <button class="submenu-btn" data-tab="arquivo-pedidos" type="button">Histórico de Pedidos</button>
     <button class="submenu-btn" data-tab="documentos" type="button">Documentos</button>
   </div>
 </div>
@@ -634,7 +643,12 @@ body.perfil-restrito .btn-reforco{display:none !important}
     </div>
 
     <div class="card">
-      <h2>Histórico de Pedidos</h2>
+      <div class="ped-ciclo-top">
+        <h2>Pedidos do ciclo atual <span id="ped-ciclo-qtd" style="font-size:.85rem; color:var(--text-2)"></span></h2>
+        <button class="primary" id="btn-salvar-pedidos" type="button">Salvar Pedidos</button>
+      </div>
+      <p style="color:var(--muted); font-size:.8rem; margin:0 0 10px">Ordenados pelo número do pedido, do maior para o menor. "Salvar Pedidos" guarda todos os pedidos abaixo numa pasta em <b>Histórico de Pedidos</b> e deixa esta lista pronta para o próximo ciclo.</p>
+      <div id="msg-arquivo" style="margin-bottom:10px"></div>
       <input class="search" id="busca-pedido" placeholder="Buscar por número do pedido ou empresa...">
       <div class="tablewrap">
         <table id="tbl-pedidos">
@@ -642,6 +656,15 @@ body.perfil-restrito .btn-reforco{display:none !important}
           <tbody></tbody>
         </table>
       </div>
+    </div>
+  </section>
+
+  <section id="tab-arquivo-pedidos" class="tab hidden">
+    <div class="card">
+      <h2>Histórico de Pedidos</h2>
+      <p style="color:var(--muted); font-size:.84rem; margin:0 0 12px">Pastas de pedidos salvos ao fim de cada ciclo. Os pedidos arquivados ficam guardados como foram emitidos e não podem ser alterados nem excluídos.</p>
+      <input class="search" id="busca-arquivo" placeholder="Buscar por número do pedido ou empresa em todas as pastas...">
+      <div id="arquivo-container" style="margin-top:12px"></div>
     </div>
   </section>
 
@@ -953,13 +976,23 @@ function assinaturaFromDoc(d){
   const r = d.data();
   return { id:d.id, nome:r.nome||'', posto:r.posto||'', funcao:r.funcao||'' };
 }
+function arquivamentoFromDoc(d){ const r=d.data(); return { id:d.id, criadoEm:Number(r.criadoEm)||0, porEmail:r.porEmail||'',
+  quantidade:Number(r.quantidade)||0, numeros:Array.isArray(r.numeros)?r.numeros:[], valorTotal:Number(r.valorTotal)||0 }; }
+// ordem decrescente pelo número do pedido informado no cadastro (comparação numérica: 150, 149, 148... 104, 38)
+function compararNumeroPedidoDesc(a,b){
+  const c = String(b.numeroPedido||'').localeCompare(String(a.numeroPedido||''), 'pt-BR', { numeric:true, sensitivity:'base' });
+  return c !== 0 ? c : (b.createdAt||0) - (a.createdAt||0);
+}
+function pedidosDoCiclo(){ return pedidos.filter(p=>!p.arquivado); }
 function pedidoFromDoc(d){
   const r = d.data();
   return { id:d.id, numeroPedido:r.numeroPedido||'', dataEmissao:r.dataEmissao||'', empresaNome:r.empresaNome||'',
     empresaCnpj:r.empresaCnpj||'', empresaEndereco:r.empresaEndereco||'', empresaTelefone:r.empresaTelefone||'', empresaEmail:r.empresaEmail||'',
     numeroEmpenho:r.numeroEmpenho||'', itens:r.itens||[], valorTotal:Number(r.valorTotal)||0,
     obs:r.obs||'', contato:r.contato||'', prazoRecebimento:r.prazoRecebimento||'',
-    assinatura1:r.assinatura1||null, assinatura2:r.assinatura2||null, responsavelEmail:r.responsavelEmail||'', referenciaPrecos:r.referenciaPrecos||'' };
+    assinatura1:r.assinatura1||null, assinatura2:r.assinatura2||null, responsavelEmail:r.responsavelEmail||'', referenciaPrecos:r.referenciaPrecos||'',
+    createdAt:Number(r.createdAt)||0, arquivado:r.arquivado===true, arquivamentoId:r.arquivamentoId||'',
+    arquivadoEm:Number(r.arquivadoEm)||0, arquivadoPorEmail:r.arquivadoPorEmail||'' };
 }
 
 function documentoFromDoc(d){
@@ -976,6 +1009,7 @@ let celulas = [];
 let movimentos = [];
 let assinaturas = [];
 let pedidos = [];
+let arquivamentosPedidos = []; // pastas do Histórico de Pedidos
 let documentos = [];
 let configOM = '';
 
@@ -1024,6 +1058,10 @@ async function carregarDados(){
   empresas = empresaSnap.docs.map(empresaFromDoc);
   assinaturas = assinaturaSnap.docs.map(assinaturaFromDoc);
   pedidos = pedidoSnap.docs.map(pedidoFromDoc);
+  try{
+    const arqSnap = await getDocs(query(collection(db,'arquivamentosPedidos'), where('userId','==',uidAtual)));
+    arquivamentosPedidos = arqSnap.docs.map(arquivamentoFromDoc);
+  }catch(e){ console.error('Erro ao carregar o Histórico de Pedidos:', e.code, e.message); arquivamentosPedidos = []; }
   documentos = docSnap.docs.map(documentoFromDoc);
 
   try{
@@ -1480,6 +1518,7 @@ function abrirTela(tab){
   if(tab==='pedidos') { popularSelectEmpresaPedido(); popularSelectAssinaturas(); renderPedidos(); }
   if(tab==='documentos') { popularSelectEmpresaDoc(); renderDocumentos(); }
   if(tab==='precos') renderPrecos();
+  if(tab==='arquivo-pedidos') renderArquivoPedidos();
 }
 function abrirGrupo(grupo, tab){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.grupo===grupo));
@@ -3643,7 +3682,7 @@ document.getElementById('btn-gerar-pedido').addEventListener('click', async ()=>
 
   try{
     const ref = await addDoc(collection(db,'pedidos'), { ...pedidoData, userId: uidDono(), ...responsavelAcao(), createdAt: Date.now() });
-    pedidos.push({ id:ref.id, ...pedidoData, responsavelEmail: responsavelAcao().responsavelEmail });
+    pedidos.push({ id:ref.id, ...pedidoData, responsavelEmail: responsavelAcao().responsavelEmail, createdAt: Date.now(), arquivado:false });
     await registrarAuditoria('Gerou pedido', `Pedido ${pedidoData.numeroPedido} · ${pedidoData.empresaNome}`);
   }catch(err){ msg.className='msg err'; msg.textContent='Erro ao salvar pedido: '+err.message; return; }
 
@@ -3661,12 +3700,15 @@ document.getElementById('btn-gerar-pedido').addEventListener('click', async ()=>
 function renderPedidos(){
   const tbody = document.querySelector('#tbl-pedidos tbody');
   const q = (document.getElementById('busca-pedido').value||'').toLowerCase();
-  const rows = pedidos.filter(p => !q || p.numeroPedido.toLowerCase().includes(q) || p.empresaNome.toLowerCase().includes(q));
+  const ciclo = pedidosDoCiclo();
+  const qtdEl = document.getElementById('ped-ciclo-qtd'); if(qtdEl) qtdEl.textContent = ciclo.length ? `(${ciclo.length})` : '';
+  const rows = ciclo.filter(p => !q || p.numeroPedido.toLowerCase().includes(q) || p.empresaNome.toLowerCase().includes(q))
+    .sort(compararNumeroPedidoDesc);
   if(rows.length===0){
-    tbody.innerHTML = `<tr><td colspan="6" class="empty">Nenhum pedido gerado ainda.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">${ciclo.length ? 'Nenhum pedido encontrado na busca.' : 'Nenhum pedido no ciclo atual.'}</td></tr>`;
     return;
   }
-  tbody.innerHTML = rows.slice().reverse().map(p=>`
+  tbody.innerHTML = rows.map(p=>`
     <tr>
       <td>${p.numeroPedido}</td><td>${p.empresaNome}</td><td>${p.dataEmissao}</td><td>${fmtMoney(p.valorTotal)}</td><td class="resp-acao">${p.responsavelEmail||'—'}</td>
       <td style="display:flex; gap:8px">
@@ -3690,14 +3732,108 @@ window.verPDFPedido = function(id){
 };
 
 window.removerPedido = async function(id){
-  if(!confirm('Excluir este pedido do histórico?')) return;
   const pedExcl = pedidos.find(p=>p.id===id);
+  if(pedExcl && pedExcl.arquivado){ alert('Pedidos arquivados no Histórico de Pedidos não podem ser excluídos.'); return; }
+  if(!confirm('Excluir este pedido?')) return;
   try{ await deleteDoc(doc(db,'pedidos',id)); }
   catch(err){ alert('Erro ao excluir: '+err.message); return; }
   await registrarAuditoria('Excluiu pedido', pedExcl ? `Pedido ${pedExcl.numeroPedido} · ${pedExcl.empresaNome}` : id);
   pedidos = pedidos.filter(p=>p.id!==id);
   renderPedidos();
 };
+
+// ---- Salvar Pedidos: arquiva o ciclo atual numa pasta do Histórico de Pedidos ----
+let arquivandoPedidos = false;
+function msgArquivo(t, tipo){ const m=document.getElementById('msg-arquivo'); m.className = t ? 'msg '+(tipo||'') : ''; m.textContent = t||''; }
+document.getElementById('btn-salvar-pedidos').addEventListener('click', async ()=>{
+  if(arquivandoPedidos) return;
+  const ciclo = pedidosDoCiclo().slice().sort(compararNumeroPedidoDesc);
+  if(!ciclo.length){ msgArquivo('Não há pedidos no ciclo atual para salvar.', 'err'); return; }
+  const nums = ciclo.map(p=>p.numeroPedido);
+  const faixa = nums.length>1 ? `nº ${nums[0]} a ${nums[nums.length-1]}` : `nº ${nums[0]}`;
+  if(!confirm(`Salvar ${ciclo.length} pedido(s) (${faixa}) numa nova pasta do Histórico de Pedidos?\n\n`+
+    `• Os pedidos não são excluídos: ficam guardados como foram emitidos, com seus números, itens, quantidades, datas e responsáveis.\n`+
+    `• Depois de arquivados, não poderão ser alterados nem excluídos.\n`+
+    `• A lista do ciclo atual ficará vazia para os próximos pedidos. A numeração continua sendo informada por você.\n\nConfirmar?`)) return;
+  arquivandoPedidos = true;
+  const btn = document.getElementById('btn-salvar-pedidos'); btn.disabled = true;
+  msgArquivo('Arquivando os pedidos...', '');
+  const agora = Date.now(); const email = (usuarioAtual.email||'').toLowerCase();
+  const arqRef = doc(collection(db,'arquivamentosPedidos'));
+  const arqDados = { userId: uidDono(), criadoEm: agora, porUid: usuarioAtual.uid, porEmail: email,
+    quantidade: ciclo.length, pedidoIds: ciclo.map(p=>p.id), numeros: nums,
+    valorTotal: arredMoeda(ciclo.reduce((t,p)=>t+(p.valorTotal||0),0)) };
+  const marca = { arquivado:true, arquivamentoId: arqRef.id, arquivadoEm: agora, arquivadoPorUid: usuarioAtual.uid, arquivadoPorEmail: email };
+  try{
+    // a pasta e os pedidos são gravados juntos: ou tudo é arquivado, ou nada muda (até 499 pedidos por lote)
+    const LOTE = 450;
+    for(let i=0; i<ciclo.length; i+=LOTE){
+      const b = writeBatch(db);
+      if(i===0) b.set(arqRef, arqDados);
+      ciclo.slice(i,i+LOTE).forEach(p=>b.update(doc(db,'pedidos',p.id), marca));
+      await b.commit();
+    }
+  }catch(err){
+    arquivandoPedidos = false; btn.disabled = false;
+    msgArquivo('Erro ao arquivar: '+err.message+'. A lista do ciclo atual não foi limpa.', 'err');
+    try{ pedidos = (await getDocs(query(collection(db,'pedidos'), where('userId','==',uidDono())))).docs.map(pedidoFromDoc); renderPedidos(); }catch(e){}
+    return;
+  }
+  // confere no banco se todos os pedidos foram arquivados antes de limpar a lista
+  let conferidos = 0, totalBanco = null;
+  try{
+    const snap = await getDocs(query(collection(db,'pedidos'), where('userId','==',uidDono())));
+    const doBanco = snap.docs.map(pedidoFromDoc);
+    totalBanco = doBanco;
+    const ids = new Set(ciclo.map(p=>p.id));
+    conferidos = doBanco.filter(p=>ids.has(p.id) && p.arquivado && p.arquivamentoId===arqRef.id).length;
+  }catch(err){ console.error('Erro ao conferir o arquivamento:', err); }
+  arquivandoPedidos = false; btn.disabled = false;
+  if(totalBanco) pedidos = totalBanco;
+  else ciclo.forEach(p=>Object.assign(p, { arquivado:true, arquivamentoId:arqRef.id, arquivadoEm:agora, arquivadoPorEmail:email }));
+  arquivamentosPedidos.push(arquivamentoFromDoc({ id:arqRef.id, data:()=>arqDados }));
+  renderPedidos();
+  if(totalBanco && conferidos !== ciclo.length){
+    msgArquivo(`Atenção: ${conferidos} de ${ciclo.length} pedido(s) foram confirmados no arquivo. Os que não foram continuam na lista do ciclo atual; clique em "Salvar Pedidos" de novo para arquivá-los.`, 'err');
+    return;
+  }
+  await registrarAuditoria('Arquivou pedidos', `${ciclo.length} pedido(s) · ${faixa}`);
+  msgArquivo(`${ciclo.length} pedido(s) salvos no Histórico de Pedidos (pasta de ${fmtDataHora(agora)}). A lista do ciclo atual está pronta para novos pedidos.`, 'ok');
+});
+
+function renderArquivoPedidos(){
+  const cont = document.getElementById('arquivo-container'); if(!cont) return;
+  const q = (document.getElementById('busca-arquivo').value||'').toLowerCase().trim();
+  const pastas = arquivamentosPedidos.slice().sort((a,b)=>b.criadoEm-a.criadoEm);
+  const porPasta = {};
+  pedidos.filter(p=>p.arquivado).forEach(p=>{ (porPasta[p.arquivamentoId]=porPasta[p.arquivamentoId]||[]).push(p); });
+  // pedidos arquivados cuja pasta não foi encontrada continuam visíveis
+  const orfaos = Object.keys(porPasta).filter(id=>!pastas.some(a=>a.id===id));
+  orfaos.forEach(id=>{ const p0 = porPasta[id][0]; pastas.push({ id, criadoEm:p0.arquivadoEm, porEmail:p0.arquivadoPorEmail, quantidade:porPasta[id].length, valorTotal:porPasta[id].reduce((t,p)=>t+p.valorTotal,0) }); });
+  if(!pastas.length){ cont.innerHTML = '<div class="empty">Nenhuma pasta arquivada ainda. Use "Salvar Pedidos" em Novo Pedido de Gêneros ao fim de cada ciclo.</div>'; return; }
+  const html = pastas.map((a,idx)=>{
+    const lista = (porPasta[a.id]||[]).filter(p => !q || p.numeroPedido.toLowerCase().includes(q) || p.empresaNome.toLowerCase().includes(q)).sort(compararNumeroPedidoDesc);
+    if(q && !lista.length) return '';
+    const todos = (porPasta[a.id]||[]).slice().sort(compararNumeroPedidoDesc);
+    const faixa = todos.length ? (todos.length>1 ? `nº ${todos[0].numeroPedido} a ${todos[todos.length-1].numeroPedido}` : `nº ${todos[0].numeroPedido}`) : '';
+    const aberto = q || idx===0;
+    return `<div class="arq-pasta">
+      <div class="arq-cab" onclick="this.nextElementSibling.classList.toggle('hidden')">
+        <div><b>📁 Pasta de ${fmtDataHora(a.criadoEm)}</b> · ${todos.length} pedido(s) ${faixa?`(${faixa})`:''}</div>
+        <small>Total ${fmtMoney(arredMoeda(a.valorTotal))} · arquivado por ${a.porEmail||'—'}</small>
+      </div>
+      <div class="arq-corpo ${aberto?'':'hidden'}">
+        <div class="tablewrap"><table>
+          <thead><tr><th>Nº Pedido</th><th>Empresa</th><th>Data</th><th>Valor total</th><th>Responsável pela Ação</th><th></th></tr></thead>
+          <tbody>${lista.map(p=>`<tr><td>${p.numeroPedido}</td><td>${p.empresaNome}</td><td>${p.dataEmissao}</td><td>${fmtMoney(p.valorTotal)}</td><td class="resp-acao">${p.responsavelEmail||'—'}</td>
+            <td><button class="btn-link" onclick="verPDFPedido('${p.id}')">Ver PDF</button></td></tr>`).join('') || '<tr><td colspan="6" class="empty">Nenhum pedido nesta pasta.</td></tr>'}</tbody>
+        </table></div>
+      </div>
+    </div>`;
+  }).join('');
+  cont.innerHTML = html || '<div class="empty">Nenhum pedido arquivado corresponde à busca.</div>';
+}
+document.getElementById('busca-arquivo').addEventListener('input', renderArquivoPedidos);
 
 // ---- Documentos (armazenados no Firestore, agrupados por empresa) ----
 const LIMITE_TAMANHO_DOC = 700*1024; // ~700KB
