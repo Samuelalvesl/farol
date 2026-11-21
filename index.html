@@ -122,6 +122,22 @@ button.danger:hover:not(:disabled){background:rgba(178,58,58,.08)}
 .grupo-header .info b{color:var(--navy)}
 .grupo-header .totais{display:flex; gap:16px; font-size:.82rem; color:var(--text-2)}
 .grupo-header .totais span strong{display:block; font-size:.95rem; color:var(--navy)}
+/* Saldo de Empenho: cabeçalho do empenho em azul-escuro; cabeçalho da tabela de itens na cor do status */
+#saldos-container .empresa-conteudo{background:#F1F3F6}
+#saldos-container .grupo-empenho > .grupo-header{background:var(--navy); border-bottom:1px solid var(--navy)}
+#saldos-container .grupo-empenho > .grupo-header .info{color:var(--on-dark-2)}
+#saldos-container .grupo-empenho > .grupo-header .info b,
+#saldos-container .grupo-empenho > .grupo-header .totais span strong{color:#fff}
+#saldos-container .grupo-empenho > .grupo-header .totais{color:var(--on-dark-2)}
+#saldos-container .grupo-empenho > .grupo-header .st-cancelado{border-color:#8FA3BF}
+#saldos-container .grupo-empenho > .grupo-header button{background:#fff; color:var(--navy); border-color:#fff}
+#saldos-container .grupo-empenho > .grupo-header button.danger{background:#fff; color:var(--err); border-color:#fff}
+#saldos-container .grupo-empenho > .grupo-header button:disabled{opacity:.45}
+#saldos-container .ne-st-ativo th{background:#2E7D5B; color:#fff}
+#saldos-container .ne-st-processamento th{background:#6B4BA8; color:#fff}
+#saldos-container .ne-st-finalizado th{background:#B23A3A; color:#fff}
+#saldos-container .ne-st-a_cancelar th{background:#F2B33D; color:#0F1E33}
+#saldos-container .ne-st-cancelado th{background:#111; color:#fff}
 .grupo-empresa{border:1px solid var(--line); border-radius:var(--radius); margin-bottom:14px; overflow:hidden; box-shadow:var(--shadow); background:var(--card)}
 .empresa-header{background:var(--card); padding:16px 18px; display:flex; flex-wrap:wrap; gap:10px 20px; align-items:center; justify-content:space-between; cursor:pointer; user-select:none}
 .empresa-header:hover{background:var(--bg2)}
@@ -2334,7 +2350,7 @@ function renderCardNE(ne, itens){
     </tr>`;
   }).join('');
 
-  return `<div class="grupo-empenho">
+  return `<div class="grupo-empenho ne-st-${st}">
     <div class="grupo-header">
       <div class="info">
         <span><b>NE:</b> ${ne}</span>
