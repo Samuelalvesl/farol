@@ -188,6 +188,15 @@ body.perfil-restrito .btn-cel-renomear, body.perfil-restrito .btn-cel-excluir{di
 .resp-acao{color:var(--text-2); font-size:.78rem}
 .ped-ciclo-top{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px}
 .ped-ciclo-top h2{margin:0}
+.atalhos-grade{display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:20px; justify-items:center}
+.atalho{display:flex; flex-direction:column; align-items:center; gap:8px; width:180px; text-decoration:none; color:var(--navy)}
+.atalho-img{width:180px; height:120px; aspect-ratio:3/2; border-radius:10px; overflow:hidden; border:1px solid var(--line); background:var(--bg2); box-shadow:0 1px 3px rgba(15,30,51,.10); transition:transform .15s, box-shadow .15s}
+.atalho-img img{width:100%; height:100%; object-fit:cover; display:block}
+.atalho:hover .atalho-img, .atalho:focus-visible .atalho-img{transform:translateY(-2px); box-shadow:0 6px 16px rgba(15,30,51,.18)}
+.atalho:focus-visible{outline:none}
+.atalho:focus-visible .atalho-img{outline:3px solid var(--blue); outline-offset:2px}
+.atalho-nome{font-size:.82rem; font-weight:600; text-align:center; line-height:1.25; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.atalho-mini{width:90px; height:60px; object-fit:cover; border-radius:6px; border:1px solid var(--line); display:block}
 .arq-pasta{border:1px solid var(--line); border-radius:10px; margin-bottom:12px; overflow:hidden; background:var(--card)}
 .arq-cab{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 14px; background:var(--bg2); cursor:pointer}
 .arq-cab b{color:var(--navy)}
@@ -462,6 +471,7 @@ body.perfil-restrito .btn-reforco{display:none !important}
   <button data-grupo="empenho">Empenho</button>
   <button data-grupo="controle">Controle</button>
   <button data-grupo="pedidos">Pedidos</button>
+  <button data-grupo="atalhos">Atalhos</button>
   <button data-grupo="config">Configurações</button>
 </nav>
 <div id="submenu">
@@ -728,11 +738,20 @@ body.perfil-restrito .btn-reforco{display:none !important}
     </div>
   </section>
 
+  <section id="tab-atalhos" class="tab hidden">
+    <div class="card">
+      <h2>Atalhos</h2>
+      <p style="color:var(--muted); font-size:.84rem; margin:0 0 16px">Acesso rápido a páginas e sistemas usados pelo setor. Cada atalho abre numa nova guia, e o FAROL continua aberto.</p>
+      <div id="atalhos-grade" class="atalhos-grade"></div>
+    </div>
+  </section>
+
   <section id="tab-config" class="tab hidden">
     <div class="actions" style="margin-bottom:16px">
       <button id="subnav-empresas" class="subnav-btn active" type="button">🏢 Cadastro de Empresas</button>
       <button id="subnav-assinaturas" class="subnav-btn" type="button">✍️ Assinaturas</button>
       <button id="subnav-usuarios" class="subnav-btn hidden" type="button">🔐 Usuários</button>
+      <button id="subnav-atalhos" class="subnav-btn hidden" type="button">🔗 Atalhos</button>
     </div>
 
     <div id="subtab-empresas">
@@ -815,6 +834,37 @@ body.perfil-restrito .btn-reforco{display:none !important}
           <button class="primary" id="btn-salvar-logo">Salvar logotipo</button>
           <button class="danger hidden" id="btn-remover-logo" type="button">Remover logotipo</button>
           <span id="msg-logo"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="subtab-atalhos" class="hidden">
+      <div class="card">
+        <h2 id="at-form-titulo">Cadastrar atalho</h2>
+        <div class="grid">
+          <div class="field"><label>Nome do atalho</label><input id="at-nome" placeholder="Ex: Comprasnet" autocomplete="off"></div>
+          <div class="field"><label>Endereço (URL)</label><input id="at-url" type="url" placeholder="https://www.gov.br/compras" autocomplete="off"></div>
+          <div class="field"><label>Status</label><select id="at-status"><option value="ativo">Ativo</option><option value="inativo">Desativado</option></select></div>
+          <div class="field"><label>Imagem do botão (PNG ou JPG)</label><input id="at-imagem" type="file" accept="image/png,image/jpeg,image/webp"></div>
+        </div>
+        <p style="color:var(--muted); font-size:.78rem; margin:8px 0 0">A imagem é recortada no formato do botão (3:2, 180 × 120 px), sem deformar. Use de preferência uma imagem horizontal.</p>
+        <div id="at-previa-wrap" class="hidden" style="margin-top:12px">
+          <label>Prévia do botão</label>
+          <div class="atalho" style="margin-top:6px; align-items:flex-start"><div class="atalho-img"><img id="at-previa" alt="Prévia"></div></div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="btn-at-salvar" type="button">Cadastrar atalho</button>
+          <button id="btn-at-cancelar" type="button" class="hidden">Cancelar edição</button>
+          <span id="msg-atalho"></span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Atalhos cadastrados</h2>
+        <div class="tablewrap">
+          <table id="tbl-atalhos">
+            <thead><tr><th>Imagem</th><th>Nome</th><th>Endereço</th><th>Status</th><th>Cadastrado / alterado por</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -976,6 +1026,8 @@ function assinaturaFromDoc(d){
   const r = d.data();
   return { id:d.id, nome:r.nome||'', posto:r.posto||'', funcao:r.funcao||'' };
 }
+function atalhoFromDoc(d){ const r=d.data(); return { id:d.id, nome:r.nome||'', url:r.url||'', imagem:r.imagem||'', ativo:r.ativo!==false,
+  criadoPorEmail:r.criadoPorEmail||'', criadoEm:Number(r.criadoEm)||0, alteradoPorEmail:r.alteradoPorEmail||'', alteradoEm:Number(r.alteradoEm)||0 }; }
 function arquivamentoFromDoc(d){ const r=d.data(); return { id:d.id, criadoEm:Number(r.criadoEm)||0, porEmail:r.porEmail||'',
   quantidade:Number(r.quantidade)||0, numeros:Array.isArray(r.numeros)?r.numeros:[], valorTotal:Number(r.valorTotal)||0 }; }
 // ordem decrescente pelo número do pedido informado no cadastro (comparação numérica: 150, 149, 148... 104, 38)
@@ -1009,7 +1061,8 @@ let celulas = [];
 let movimentos = [];
 let assinaturas = [];
 let pedidos = [];
-let arquivamentosPedidos = []; // pastas do Histórico de Pedidos
+let arquivamentosPedidos = [];
+let atalhos = []; // atalhos para páginas externas (cadastro do administrador) // pastas do Histórico de Pedidos
 let documentos = [];
 let configOM = '';
 
@@ -1058,6 +1111,10 @@ async function carregarDados(){
   empresas = empresaSnap.docs.map(empresaFromDoc);
   assinaturas = assinaturaSnap.docs.map(assinaturaFromDoc);
   pedidos = pedidoSnap.docs.map(pedidoFromDoc);
+  try{
+    const atSnap = await getDocs(collection(db,'atalhos'));
+    atalhos = atSnap.docs.map(atalhoFromDoc);
+  }catch(e){ console.error('Erro ao carregar os atalhos:', e.code, e.message); atalhos = []; }
   try{
     const arqSnap = await getDocs(query(collection(db,'arquivamentosPedidos'), where('userId','==',uidAtual)));
     arquivamentosPedidos = arqSnap.docs.map(arquivamentoFromDoc);
@@ -1519,11 +1576,13 @@ function abrirTela(tab){
   if(tab==='documentos') { popularSelectEmpresaDoc(); renderDocumentos(); }
   if(tab==='precos') renderPrecos();
   if(tab==='arquivo-pedidos') renderArquivoPedidos();
+  if(tab==='atalhos') renderAtalhos();
 }
 function abrirGrupo(grupo, tab){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.grupo===grupo));
   document.querySelectorAll('#submenu .submenu-grupo').forEach(g=>g.classList.toggle('hidden', g.dataset.grupo!==grupo));
   if(grupo==='config'){ abrirTela('config'); return; }
+  if(grupo==='atalhos'){ abrirTela('atalhos'); return; }
   const grupoEl = document.querySelector('#submenu .submenu-grupo[data-grupo="'+grupo+'"]');
   const alvo = tab || (grupoEl.querySelector('.submenu-btn.active') || grupoEl.querySelector('.submenu-btn')).dataset.tab;
   grupoEl.querySelectorAll('.submenu-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===alvo));
@@ -2745,13 +2804,14 @@ document.getElementById('btn-baixar').addEventListener('click', async ()=>{
 });
 
 // ---- Configurações: sub-navegação ----
-const SUBABAS_CONFIG = ['empresas','assinaturas','usuarios'];
+const SUBABAS_CONFIG = ['empresas','assinaturas','usuarios','atalhos'];
 function mostrarSubabaConfig(ativa){
   SUBABAS_CONFIG.forEach(nome=>{
     document.getElementById('subnav-'+nome).classList.toggle('active', nome===ativa);
     document.getElementById('subtab-'+nome).classList.toggle('hidden', nome!==ativa);
   });
   if(ativa==='usuarios') carregarUsuarios();
+  if(ativa==='atalhos') renderAtalhosConfig();
 }
 SUBABAS_CONFIG.forEach(nome=>{
   document.getElementById('subnav-'+nome).addEventListener('click', ()=>mostrarSubabaConfig(nome));
@@ -3994,11 +4054,153 @@ window.removerDocumento = async function(id){
   renderDocumentos();
 };
 
+// ---- Atalhos ----
+function escHtml(t){ return String(t==null?'':t).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function urlValida(txt){
+  try{ const u = new URL(String(txt||'').trim()); return (u.protocol==='https:' || u.protocol==='http:') && !!u.hostname && u.hostname.includes('.') ? u.href : null; }
+  catch(e){ return null; }
+}
+function ordenarAtalhos(lista){ return lista.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')); }
+function renderAtalhos(){
+  const g = document.getElementById('atalhos-grade'); if(!g) return;
+  const ativos = ordenarAtalhos(atalhos.filter(a=>a.ativo && urlValida(a.url)));
+  if(!ativos.length){
+    g.innerHTML = `<div class="empty" style="grid-column:1/-1">Nenhum atalho disponível.${ehAdmin()?' Cadastre os atalhos em Configurações → Atalhos.':''}</div>`;
+    return;
+  }
+  g.innerHTML = ativos.map(a=>`<a class="atalho" href="${escHtml(urlValida(a.url))}" target="_blank" rel="noopener noreferrer" title="${escHtml(a.nome)} — abre em nova guia">
+      <div class="atalho-img">${a.imagem?`<img src="${a.imagem}" alt="">`:''}</div>
+      <span class="atalho-nome">${escHtml(a.nome)}</span></a>`).join('');
+}
+let atEditandoId = null, atImagemNova = null, atSalvando = false;
+function msgAtalho(t, ok){ const m=document.getElementById('msg-atalho'); m.className = t ? (ok?'msg ok':'msg err') : ''; m.textContent = t||''; }
+function limparFormAtalho(){
+  atEditandoId = null; atImagemNova = null;
+  ['at-nome','at-url','at-imagem'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('at-status').value='ativo';
+  document.getElementById('at-previa-wrap').classList.add('hidden');
+  document.getElementById('at-form-titulo').textContent='Cadastrar atalho';
+  document.getElementById('btn-at-salvar').textContent='Cadastrar atalho';
+  document.getElementById('btn-at-cancelar').classList.add('hidden');
+}
+function renderAtalhosConfig(){
+  const tb = document.querySelector('#tbl-atalhos tbody'); if(!tb) return;
+  const lista = ordenarAtalhos(atalhos);
+  tb.innerHTML = lista.length ? lista.map(a=>`<tr>
+      <td>${a.imagem?`<img class="atalho-mini" src="${a.imagem}" alt="">`:'—'}</td>
+      <td>${escHtml(a.nome)}</td>
+      <td style="max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap"><a href="${escHtml(urlValida(a.url)||'#')}" target="_blank" rel="noopener noreferrer">${escHtml(a.url)}</a></td>
+      <td>${a.ativo?'<span class="pill ok">Ativo</span>':'<span class="pill">Desativado</span>'}</td>
+      <td class="resp-acao">${escHtml(a.alteradoPorEmail||a.criadoPorEmail||'—')}<br>${fmtDataHora(a.alteradoEm||a.criadoEm)}</td>
+      <td style="white-space:nowrap"><button type="button" onclick="editarAtalho('${a.id}')" style="padding:4px 9px">✏️ Editar</button>
+        <button type="button" onclick="alternarAtalho('${a.id}')">${a.ativo?'Desativar':'Ativar'}</button>
+        <button type="button" class="danger" onclick="excluirAtalho('${a.id}')">Excluir</button></td>
+    </tr>`).join('') : '<tr><td colspan="6" class="empty">Nenhum atalho cadastrado.</td></tr>';
+}
+// recorta a imagem no formato do botão (3:2) sem deformar e reduz o tamanho para guardar no banco
+function prepararImagemAtalho(arquivo){
+  return new Promise((resolve, reject)=>{
+    if(!/^image\/(png|jpeg|webp)$/.test(arquivo.type)){ reject(new Error('Envie uma imagem PNG, JPG ou WEBP.')); return; }
+    if(arquivo.size > 8*1024*1024){ reject(new Error('Imagem muito grande (máximo 8 MB).')); return; }
+    const leitor = new FileReader();
+    leitor.onerror = ()=>reject(new Error('Não foi possível ler a imagem.'));
+    leitor.onload = ()=>{
+      const img = new Image();
+      img.onerror = ()=>reject(new Error('Arquivo de imagem inválido.'));
+      img.onload = ()=>{
+        const W=360, H=240; const c=document.createElement('canvas'); c.width=W; c.height=H;
+        const ctx=c.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
+        const esc = Math.max(W/img.width, H/img.height);
+        const w = img.width*esc, h = img.height*esc;
+        ctx.drawImage(img, (W-w)/2, (H-h)/2, w, h);
+        resolve(c.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = leitor.result;
+    };
+    leitor.readAsDataURL(arquivo);
+  });
+}
+document.getElementById('at-imagem').addEventListener('change', async ev=>{
+  const arq = ev.target.files && ev.target.files[0];
+  atImagemNova = null;
+  if(!arq) return;
+  try{
+    atImagemNova = await prepararImagemAtalho(arq);
+    document.getElementById('at-previa').src = atImagemNova;
+    document.getElementById('at-previa-wrap').classList.remove('hidden');
+    msgAtalho('');
+  }catch(err){ ev.target.value=''; msgAtalho(err.message, false); }
+});
+document.getElementById('btn-at-cancelar').addEventListener('click', ()=>{ limparFormAtalho(); msgAtalho(''); });
+window.editarAtalho = function(id){
+  if(!ehAdmin()){ alert('Somente o administrador gerencia os atalhos.'); return; }
+  const a = atalhos.find(x=>x.id===id); if(!a) return;
+  atEditandoId = id; atImagemNova = null;
+  document.getElementById('at-nome').value = a.nome;
+  document.getElementById('at-url').value = a.url;
+  document.getElementById('at-status').value = a.ativo ? 'ativo' : 'inativo';
+  document.getElementById('at-imagem').value = '';
+  if(a.imagem){ document.getElementById('at-previa').src = a.imagem; document.getElementById('at-previa-wrap').classList.remove('hidden'); }
+  document.getElementById('at-form-titulo').textContent = `Editar atalho — ${a.nome}`;
+  document.getElementById('btn-at-salvar').textContent = 'Salvar alterações';
+  document.getElementById('btn-at-cancelar').classList.remove('hidden');
+  msgAtalho('Para trocar a imagem, escolha um novo arquivo. Sem novo arquivo, a imagem atual é mantida.', true);
+};
+document.getElementById('btn-at-salvar').addEventListener('click', async ()=>{
+  if(!ehAdmin()){ msgAtalho('Somente o administrador gerencia os atalhos.', false); return; }
+  if(atSalvando) return;
+  const nome = document.getElementById('at-nome').value.trim();
+  const url = urlValida(document.getElementById('at-url').value);
+  const ativo = document.getElementById('at-status').value === 'ativo';
+  if(!nome){ msgAtalho('Informe o nome do atalho.', false); return; }
+  if(!url){ msgAtalho('Endereço inválido. Informe o link completo, começando com https:// (ex: https://www.gov.br/compras).', false); return; }
+  const atual = atEditandoId ? atalhos.find(x=>x.id===atEditandoId) : null;
+  const imagem = atImagemNova || (atual ? atual.imagem : '');
+  if(!imagem){ msgAtalho('Escolha a imagem do botão.', false); return; }
+  const email = (usuarioAtual.email||'').toLowerCase(); const agora = Date.now();
+  atSalvando = true; const btn = document.getElementById('btn-at-salvar'); btn.disabled = true;
+  try{
+    if(atual){
+      const dados = { nome, url, ativo, imagem, alteradoPorUid:usuarioAtual.uid, alteradoPorEmail:email, alteradoEm:agora };
+      await updateDoc(doc(db,'atalhos',atual.id), dados);
+      Object.assign(atual, { nome, url, ativo, imagem, alteradoPorEmail:email, alteradoEm:agora });
+      msgAtalho(`Atalho "${nome}" atualizado.`, true);
+    } else {
+      const dados = { nome, url, ativo, imagem, criadoPorUid:usuarioAtual.uid, criadoPorEmail:email, criadoEm:agora };
+      const ref = await addDoc(collection(db,'atalhos'), dados);
+      atalhos.push(atalhoFromDoc({ id:ref.id, data:()=>dados }));
+      msgAtalho(`Atalho "${nome}" cadastrado.${ativo?' Ele já aparece na aba Atalhos.':' Ele está desativado e não aparece na aba Atalhos.'}`, true);
+    }
+    limparFormAtalho();
+  }catch(err){ msgAtalho('Erro ao salvar: '+err.message, false); }
+  finally{ atSalvando = false; btn.disabled = false; }
+  renderAtalhosConfig(); renderAtalhos();
+});
+window.alternarAtalho = async function(id){
+  if(!ehAdmin()){ alert('Somente o administrador gerencia os atalhos.'); return; }
+  const a = atalhos.find(x=>x.id===id); if(!a) return;
+  const email = (usuarioAtual.email||'').toLowerCase(); const agora = Date.now();
+  try{ await updateDoc(doc(db,'atalhos',id), { ativo:!a.ativo, alteradoPorUid:usuarioAtual.uid, alteradoPorEmail:email, alteradoEm:agora }); }
+  catch(err){ alert('Erro ao alterar o status: '+err.message); return; }
+  Object.assign(a, { ativo:!a.ativo, alteradoPorEmail:email, alteradoEm:agora });
+  renderAtalhosConfig(); renderAtalhos();
+};
+window.excluirAtalho = async function(id){
+  if(!ehAdmin()){ alert('Somente o administrador gerencia os atalhos.'); return; }
+  const a = atalhos.find(x=>x.id===id); if(!a) return;
+  if(!confirm(`Excluir o atalho "${a.nome}"? Essa ação não pode ser desfeita.`)) return;
+  try{ await deleteDoc(doc(db,'atalhos',id)); }catch(err){ alert('Erro ao excluir: '+err.message); return; }
+  atalhos = atalhos.filter(x=>x.id!==id);
+  if(atEditandoId===id) limparFormAtalho();
+  renderAtalhosConfig(); renderAtalhos();
+};
+
 // ---- Configurações: Gerenciamento de Usuários (admin) ----
 function renderSubnavUsuarios(){
   const btn = document.getElementById('subnav-usuarios');
   const ehAdmin = !!(usuarioAutorizacao && usuarioAutorizacao.isAdmin);
   btn.classList.toggle('hidden', !ehAdmin);
+  document.getElementById('subnav-atalhos').classList.toggle('hidden', !ehAdmin);
   // OM e logotipo: só o administrador edita
   document.getElementById('card-om').classList.toggle('hidden', !ehAdmin);
   document.getElementById('card-logo').classList.toggle('hidden', !ehAdmin);
