@@ -375,7 +375,19 @@ body:has(#tab-painel:not(.hidden)) #submenu{padding-top:0}
 .pq-aten{grid-column:span 4; grid-row:span 3}
 .pq-nfs{grid-column:span 3; grid-row:span 3}
 .pq-cel{grid-column:span 2; grid-row:span 6}
-.pq-forn{grid-column:span 10; grid-row:span 3}
+.pq-forn{grid-column:span 6; grid-row:span 3}
+.pq-ag{grid-column:span 4; grid-row:span 3}
+.pq-ag .ag-dh{display:flex; justify-content:space-between; align-items:baseline; gap:8px}
+.pq-ag .ag-dh a{font-size:.72rem; color:var(--blue); cursor:pointer; font-weight:600; white-space:nowrap}
+.pq-ag .ag-dchips{display:flex; gap:6px; flex-wrap:wrap; margin:0 0 4px}
+.pq-ag .ag-dchips span{font-size:.66rem; background:#EEF3F9; color:var(--navy); border-radius:999px; padding:1px 8px; white-space:nowrap}
+.pq-ag .ag-dchips span.r{background:rgba(178,58,58,.12); color:#B23A3A}
+.pq-ag .ag-dchips span.e{background:rgba(138,85,0,.12); color:#8A5500}
+.pq-ag .dash-linha{cursor:pointer; gap:8px}
+.pq-ag .dash-linha:hover{background:#F6F9FE}
+.pq-ag .ag-cor{display:inline-block; width:4px; height:12px; border-radius:2px; margin-right:6px; vertical-align:-2px}
+.pq-ag .ag-hr{color:var(--text-2); font-variant-numeric:tabular-nums; margin-right:4px}
+.tag.agd{background:rgba(178,58,58,.14); color:#B23A3A} .tag.agh{background:#E3EEFC; color:#1D4FA8} .tag.agf{background:#EEF1F5; color:#5B6B82}
 .pgrid .st-linha{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:6px; margin:0 0 3px; font-size:.76rem}
 .pgrid .st-linha .nome{width:auto}
 .pgrid .st-linha .tr{height:7px}
@@ -1665,7 +1677,17 @@ function renderPainel(){
     .map(ne=>{ const f=porNE[ne][0]; const v=f.vigencia; if(!/^\d{4}-\d{2}-\d{2}$/.test(v||'')) return null;
       const saldo = saldoNE(ne, porNE[ne]); const d = diasAte(v);
       return (saldo>0 && d<=30) ? {ne, v, d, saldo} : null; }).filter(Boolean).sort((a,b)=>a.d-b.d);
-  const qtdAtencao = baixos.length + vig.length;
+  // Agenda: atrasadas, pendências de hoje e próximos 7 dias
+  const agAtr = agenda.filter(agAtrasada).sort((a,b)=>agMomento(a)-agMomento(b));
+  const agHoje = agenda.filter(a=>a.data===hoje && !a.concluida && !agAtrasada(a)).sort(agOrdem);
+  const lim7 = agAdd(hoje, 7);
+  const agProx = agenda.filter(a=>!a.concluida && a.data>hoje && a.data<=lim7).sort((a,b)=>agMomento(a)-agMomento(b));
+  const entregas7 = agenda.filter(a=>!a.concluida && a.categoria==='ent' && a.data>=hoje && a.data<=lim7).length;
+  const qtdHojeAg = agenda.filter(a=>a.data===hoje).length;
+  const listaAg = [...agAtr.map(a=>[a,'agd','Atrasada']), ...agHoje.map(a=>[a,'agh','Hoje']), ...agProx.map(a=>[a,'agf',fmtDataBR(a.data).slice(0,5)])].slice(0,5);
+  const linhasAg = listaAg.length ? listaAg.map(([a,t,r])=>`<div class="dash-linha" data-ag-iso="${a.data}" title="${escHtml(agHorario(a)+' · '+a.titulo)}"><span><i class="ag-cor" style="background:${AG_CATS[a.categoria].cor}"></i><span class="ag-hr">${t==='agd'?fmtDataBR(a.data).slice(0,5):agHorario(a)}</span>${escHtml(a.titulo)}</span><span class="tag ${t}">${r}</span></div>`).join('')
+    : `<div class="empty">Nada atrasado, nada para hoje nem para os próximos 7 dias.</div>`;
+  const qtdAtencao = baixos.length + vig.length + agAtr.length;
 
   const corSt = {ativo:'#2E7D5B',processamento:'#6B46C1',finalizado:'#B23A3A',a_cancelar:'#F2B33D',cancelado:'#111'};
   const linhasSt = Object.keys(cont).map(st=>`<div class="st-linha"><span class="nome"><span class="st-badge st-${st}">${STATUS_INFO[st].nome}</span></span>
@@ -1683,6 +1705,8 @@ function renderPainel(){
       ? `<div class="alerta"><span class="tag baixo">Saldo baixo</span><span><b>${b.ne}</b> · Hortifrutigranjeiros — ${fmtMoney(b.saldo)} restantes (${fmtPct(b.pct)})</span></div>`
       : `<div class="alerta"><span class="tag baixo">Saldo baixo</span><span><b>${b.e.numero}</b> · ${b.e.item} — ${fmtQtd(b.e.saldoQtd)} ${b.e.uf||''} restantes (${fmtPct(b.pct)})</span></div>`),
     ...vig.slice(0,6).map(x=>`<div class="alerta"><span class="tag vig">Vigência</span><span><b>${x.ne}</b> · ${x.d<0?`vencida em ${fmtDataBR(x.v)} (há ${-x.d} dia(s))`:(x.d===0?`vence hoje (${fmtDataBR(x.v)})`:`vence em ${fmtDataBR(x.v)} (${x.d} dia(s))`)} — saldo ${fmtMoney(x.saldo)}</span></div>`)
+,
+    ...agAtr.slice(0,4).map(a=>`<div class="alerta"><span class="tag vig">Agenda</span><span><b>${escHtml(a.titulo)}</b> — tarefa atrasada desde ${fmtDataBR(a.data)}${a.horaFim?' '+a.horaFim:''}</span></div>`)
   ].join('') || `<div class="empty">Nenhum ponto de atenção no momento.</div>`;
 
   const ultNF = listaNF.slice().sort((a,b)=>(b.createdAt-a.createdAt)||(b.data||'').localeCompare(a.data||'')).slice(0,5);
@@ -1709,15 +1733,26 @@ function renderPainel(){
       ${kpiCel}
       <div class="kpi amar"><div class="rot">Notas fiscais no mês</div><div class="val">${nfMes.length}</div><div class="sub">${fmtMoney(valorNfMes)} baixados no mês</div></div>
       <div class="kpi"><div class="rot">Pedidos no mês</div><div class="val">${pedMes.length}</div><div class="sub">${fmtMoney(valorPedMes)} · ${fornPedMes} fornecedor(es)</div></div>
-      <div class="kpi verm"><div class="rot">Pontos de atenção</div><div class="val">${qtdAtencao}</div><div class="sub">${baixos.length} saldo baixo · ${vig.length} vigência(s) a vencer</div></div>
+      <div class="kpi verm"><div class="rot">Pontos de atenção</div><div class="val">${qtdAtencao}</div><div class="sub">${baixos.length} saldo baixo · ${vig.length} vigência(s) a vencer${agAtr.length?` · ${agAtr.length} tarefa(s) atrasada(s)`:''}</div></div>
       <div class="card pq-status"><h2>Empenhos por status</h2>${linhasSt}</div>
       <div class="card pq-aten"><h2>Pontos de atenção</h2>${alertas}</div>
       <div class="card pq-nfs"><h2>Últimas notas fiscais</h2>${linhasNF}</div>
       <div class="card pq-cel"><h2>Células de crédito</h2>${listaCel}</div>
+      <div class="card pq-ag"><div class="ag-dh"><h2>Agenda</h2><a id="painel-abrir-agenda">Abrir Agenda →</a></div>
+        <div class="ag-dchips"><span>Hoje <b>${qtdHojeAg}</b></span><span class="${agAtr.length?'r':''}">Atrasadas <b>${agAtr.length}</b></span><span class="e">Entregas em 7 dias <b>${entregas7}</b></span></div>
+        ${linhasAg}</div>
       <div class="card pq-forn"><h2>Maiores saldos por fornecedor</h2>
         <div class="tablewrap"><table><thead><tr><th>Fornecedor</th><th>Empenhos</th><th>Saldo</th><th>Executado</th></tr></thead><tbody>${linhasForn}</tbody></table></div>
       </div>
     </div>`;
+
+  // atalhos da Agenda no Painel
+  const pa = el.querySelector('.pq-ag');
+  if(pa) pa.addEventListener('click', ev=>{
+    const ln = ev.target.closest('[data-ag-iso]');
+    if(ln){ agRef = ln.dataset.agIso; agMiniRef = agRef.slice(0,7); agView = 'dia'; abrirGrupo('agenda'); return; }
+    if(ev.target.closest('#painel-abrir-agenda')){ agRef = isoHoje(); agMiniRef = agRef.slice(0,7); abrirGrupo('agenda'); }
+  });
 
   // passa as células automaticamente (pausa com o mouse em cima)
   const jan = document.getElementById('kc-janela');
