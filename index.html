@@ -298,6 +298,8 @@ body.perfil-restrito .btn-cel-renomear, body.perfil-restrito .btn-cel-excluir{di
 .ag-toast button{background:#fff; color:var(--navy); border:0; border-radius:6px; padding:4px 10px; font-size:.76rem; font-weight:700; cursor:pointer}
 @media (max-width:1000px){ .ag-corpo{grid-template-columns:1fr} .ag-kpis{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @media (max-width:640px){ .ag-mes .d{min-height:64px; padding:3px} .ag-ev{font-size:.6rem; padding:1px 3px} .ag-card{flex-wrap:wrap} .ag-card .acoes{margin-left:0} }
+#ped-edit-banner.hidden{display:none !important}
+#tbl-pedidos tr.ped-editando td{background:#EAF2FE}
 .arq-pasta{border:1px solid var(--line); border-radius:10px; margin-bottom:12px; overflow:hidden; background:var(--card)}
 .arq-cab{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 14px; background:var(--bg2); cursor:pointer}
 .arq-cab b{color:var(--navy)}
@@ -750,7 +752,11 @@ body.perfil-restrito .btn-reforco{display:none !important}
 
   <section id="tab-pedidos" class="tab hidden">
     <div class="card">
-      <h2>Novo Pedido de Gêneros</h2>
+      <h2 id="ped-form-titulo">Novo Pedido de Gêneros</h2>
+      <div id="ped-edit-banner" class="hidden" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; background:#EAF2FE; border:1.5px solid var(--blue); border-radius:10px; padding:10px 14px; margin:0 0 14px; font-size:.86rem; color:var(--navy)">
+        <span id="ped-edit-txt"></span>
+        <button type="button" id="btn-cancelar-edicao-ped">Cancelar edição</button>
+      </div>
       <div class="grid">
         <div class="field"><label>Número do Pedido</label><input id="ped-numero" placeholder="Ex: 104"></div>
         <div class="field"><label>Empresa Fornecedora</label><select id="ped-empresa"></select></div>
@@ -775,6 +781,7 @@ body.perfil-restrito .btn-reforco{display:none !important}
         </div>
         <div class="actions">
           <button class="primary" id="btn-gerar-pedido">Gerar Pedido em PDF</button>
+          <button type="button" id="btn-cancelar-edicao-ped2" class="hidden">Cancelar edição</button>
           <span id="msg-pedido"></span>
         </div>
       </div>
@@ -1214,6 +1221,7 @@ function pedidoFromDoc(d){
     empresaCnpj:r.empresaCnpj||'', empresaEndereco:r.empresaEndereco||'', empresaTelefone:r.empresaTelefone||'', empresaEmail:r.empresaEmail||'',
     numeroEmpenho:r.numeroEmpenho||'', itens:r.itens||[], valorTotal:Number(r.valorTotal)||0,
     obs:r.obs||'', contato:r.contato||'', prazoRecebimento:r.prazoRecebimento||'',
+    ...(r.dataEntrega ? { dataEntrega:r.dataEntrega } : {}), alteradoPorEmail:r.alteradoPorEmail||'', alteradoEm:Number(r.alteradoEm)||0,
     assinatura1:r.assinatura1||null, assinatura2:r.assinatura2||null, responsavelEmail:r.responsavelEmail||'', referenciaPrecos:r.referenciaPrecos||'',
     createdAt:Number(r.createdAt)||0, arquivado:r.arquivado===true, arquivamentoId:r.arquivamentoId||'',
     arquivadoEm:Number(r.arquivadoEm)||0, arquivadoPorEmail:r.arquivadoPorEmail||'' };
@@ -3623,6 +3631,7 @@ document.getElementById('ped-empresa').addEventListener('change', ()=>{
 
 // ---- totais do pedido (por item e estimado) ----
 function precoDaLinhaPedido(tr){
+  if(tr.dataset.orig!==undefined) return Number(tr.dataset.preco)||0;
   if(tr.dataset.precoId){ const p = precosMensais.find(x=>x.id===tr.dataset.precoId); return p ? p.precoUnitario : 0; }
   const e = empenhos.find(x=>x.id===tr.dataset.id); return e ? e.vunit : 0;
 }
@@ -3636,7 +3645,7 @@ function atualizarTotaisPedido(){
     if(q.vazio || q.erro || !(q.valor>0)){ cel.textContent = (!q.vazio && q.erro) ? 'qtd. inválida' : '—'; return; }
     const v = arredMoeda(q.valor * precoDaLinhaPedido(tr));
     cel.textContent = fmtMoney(v);
-    if(marcado){ total += v; if(tr.dataset.precoId) porNEHF[tr.dataset.ne] = (porNEHF[tr.dataset.ne]||0) + v; }
+    if(marcado){ total += v; if(tr.dataset.precoId || tr.dataset.hf==='1') porNEHF[tr.dataset.ne] = (porNEHF[tr.dataset.ne]||0) + v; }
   });
   document.querySelectorAll('#ped-itens-lista [data-hf-ne]').forEach(bl=>{
     const al = bl.querySelector('.ped-hf-alerta'); if(!al) return;
@@ -3875,6 +3884,19 @@ document.getElementById('btn-gerar-pedido').addEventListener('click', async ()=>
     if(erroPed) return;
     const marcado = tr.querySelector('.ped-item-check').checked;
     if(!marcado) return;
+    if(tr.dataset.orig!==undefined){
+      // item que já estava no pedido em edição: mantém o preço gravado no pedido
+      const o = pedEditOrig && pedEditOrig.itens[Number(tr.dataset.orig)];
+      if(!o) return;
+      const ne = tr.dataset.ne || '';
+      const qo = parseQtd(tr.querySelector('.ped-item-qtd').value);
+      if(qo.vazio || (qo.valor!==undefined && qo.valor<=0)) return;
+      if(qo.erro){ erroPed = `"${o.item}": ${qo.erro}`; return; }
+      if(ne && Math.abs(qo.valor - Number(o.qtd)) > 1e-9){ const c = checarOp(ne,'pedido'); if(!c.ok){ erroPed = `"${o.item}": ${c.msg} Este item só pode ficar com a quantidade original ou ser desmarcado.`; return; } }
+      itensSelecionados.push({ ...o, qtd:qo.valor, valorTotal:arredMoeda(qo.valor*Number(o.valorUnitario)), ...(ne ? { ne } : {}) });
+      if(ne) nesUsados.add(ne);
+      return;
+    }
     if(tr.dataset.precoId){
       // Hortifrutigranjeiros: produto e preço da Tabela Mensal do mês do pedido (o preço fica gravado no pedido)
       const p = precosMensais.find(x=>x.id===tr.dataset.precoId);
@@ -3885,7 +3907,7 @@ document.getElementById('btn-gerar-pedido').addEventListener('click', async ()=>
       { const c = checarOp(ne,'pedido'); if(!c.ok){ erroPed = c.msg; return; } }
       if(qh.erro){ erroPed = `"${p.produto}": ${qh.erro}`; return; }
       itensSelecionados.push({ item:p.produto, uf:p.unidade, qtd:qh.valor, valorUnitario:p.precoUnitario, valorTotal:arredMoeda(qh.valor*p.precoUnitario),
-        origemPreco:'tabela-mensal', referenciaPreco:p.referencia, precoId:p.id });
+        origemPreco:'tabela-mensal', referenciaPreco:p.referencia, precoId:p.id, ne });
       nesUsados.add(ne);
       return;
     }
@@ -3898,7 +3920,7 @@ document.getElementById('btn-gerar-pedido').addEventListener('click', async ()=>
     if(q.vazio || (q.valor!==undefined && q.valor<=0)) return;
     if(q.erro){ erroPed = `"${e.item}": ${q.erro}`; return; }
     const qtd = q.valor;
-    itensSelecionados.push({ item:e.item, uf:e.uf, qtd, valorUnitario:e.vunit, valorTotal:arredMoeda(qtd*e.vunit) });
+    itensSelecionados.push({ item:e.item, uf:e.uf, qtd, valorUnitario:e.vunit, valorTotal:arredMoeda(qtd*e.vunit), ne:e.numero });
     nesUsados.add(e.numero);
   });
   if(erroPed){ msg.className='msg err'; msg.textContent=erroPed; return; }
@@ -3922,6 +3944,8 @@ document.getElementById('btn-gerar-pedido').addEventListener('click', async ()=>
     assinatura1: assin1 ? {nome:assin1.nome, posto:assin1.posto, funcao:assin1.funcao} : null,
     assinatura2: assin2 ? {nome:assin2.nome, posto:assin2.posto, funcao:assin2.funcao} : null
   };
+
+  if(pedEditId){ await salvarEdicaoPedido(pedidoData, msg); return; }
 
   try{
     const ref = await addDoc(collection(db,'pedidos'), { ...pedidoData, userId: uidDono(), ...responsavelAcao(), createdAt: Date.now() });
@@ -3954,15 +3978,141 @@ function renderPedidos(){
     return;
   }
   tbody.innerHTML = rows.map(p=>`
-    <tr>
+    <tr${p.id===pedEditId?' class="ped-editando"':''}>
       <td>${p.numeroPedido}</td><td>${p.empresaNome}</td><td>${p.dataEmissao}</td><td>${fmtMoney(p.valorTotal)}</td><td class="resp-acao">${p.responsavelEmail||'—'}</td>
       <td style="display:flex; gap:8px">
         <button class="btn-link" onclick="verPDFPedido('${p.id}')">Ver PDF</button>
+        <button type="button" onclick="editarPedido('${p.id}')">✏️ Editar</button>
         <button class="danger" onclick="removerPedido('${p.id}')">Excluir</button>
       </td>
     </tr>`).join('');
 }
 document.getElementById('busca-pedido').addEventListener('input', renderPedidos);
+
+// ---- Edição de pedido (somente pedidos do ciclo atual; arquivados ficam intocáveis) ----
+let pedEditId = null, pedEditOrig = null, pedSalvandoEdicao = false;
+function nesDoPedido(p){ return String(p.numeroEmpenho||'').split(',').map(x=>x.trim()).filter(Boolean); }
+function neDoItemPedido(it, p){
+  if(it.ne) return it.ne;
+  const nes = nesDoPedido(p);
+  if(it.origemPreco==='tabela-mensal') return nes.find(ehHFNumero) || nes[0] || '';
+  const e = empenhos.find(x=>nes.includes(x.numero) && x.item===it.item && Math.abs(Number(x.vunit)-Number(it.valorUnitario))<1e-6);
+  return e ? e.numero : (nes.length===1 ? nes[0] : '');
+}
+window.editarPedido = function(id){
+  const p = pedidos.find(x=>x.id===id); if(!p) return;
+  if(p.arquivado){ alert('Pedidos arquivados no Histórico de Pedidos não podem ser editados.'); return; }
+  const emp = empresas.find(e=>e.nome===p.empresaNome);
+  if(!emp){ alert(`A empresa "${p.empresaNome}" não está mais cadastrada, então este pedido não pode ser editado. Gere um novo pedido, se precisar.`); return; }
+  pedEditId = id; pedEditOrig = JSON.parse(JSON.stringify(p));
+  const itensOrig = (pedEditOrig.itens||[]).map((it,i)=>({ it, i, ne:neDoItemPedido(it, pedEditOrig) }));
+  document.getElementById('ped-numero').value = p.numeroPedido||'';
+  const sel = document.getElementById('ped-empresa');
+  sel.value = emp.id; sel.dispatchEvent(new Event('change')); sel.disabled = true;
+  // remove das listas de disponíveis os itens que já estão no pedido (evita duplicar)
+  document.querySelectorAll('#ped-itens-lista tbody tr').forEach(tr=>{
+    if(tr.dataset.precoId){ if(itensOrig.some(o=>o.it.precoId===tr.dataset.precoId && o.ne===tr.dataset.ne)) tr.remove(); return; }
+    const e = empenhos.find(x=>x.id===tr.dataset.id);
+    if(e && itensOrig.some(o=>o.ne===e.numero && o.it.item===e.item && Math.abs(Number(o.it.valorUnitario)-Number(e.vunit))<1e-6)) tr.remove();
+  });
+  const bloco = `<div class="grupo-empenho" id="ped-orig-bloco" style="margin-bottom:14px; outline:2px solid var(--blue); outline-offset:-2px">
+    <div class="grupo-header"><div class="info"><span><b>Itens deste pedido</b></span>
+      <span style="font-size:.8rem; color:var(--text-2)">Preços gravados no pedido. Altere a quantidade ou desmarque para retirar o item; mais abaixo você pode incluir outros itens.</span></div></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th></th><th>Item</th><th>Empenho</th><th>UF</th><th>Vlr. unit. (do pedido)</th><th>Qtd. solicitada</th><th>Vlr. total</th></tr></thead>
+      <tbody>${itensOrig.map(o=>`
+        <tr data-orig="${o.i}" data-ne="${escHtml(o.ne)}" data-preco="${Number(o.it.valorUnitario)||0}" data-hf="${o.it.origemPreco==='tabela-mensal'?'1':''}">
+          <td><input type="checkbox" class="ped-item-check" checked></td>
+          <td>${escHtml(o.it.item)}${o.it.origemPreco==='tabela-mensal'?` <span class="hf-badge">Tabela ${fmtRef(o.it.referenciaPreco)}</span>`:''}</td>
+          <td>${escHtml(o.ne||'-')}</td><td>${escHtml(o.it.uf||'-')}</td><td>${o.it.origemPreco==='tabela-mensal'?fmtPreco(o.it.valorUnitario):fmtMoney(o.it.valorUnitario)}</td>
+          <td><input type="text" inputmode="decimal" class="ped-item-qtd" autocomplete="off" style="width:110px" value="${String(o.it.qtd).replace('.',',')}"></td>
+          <td class="ped-vtotal">—</td>
+        </tr>`).join('')}</tbody>
+    </table></div></div>`;
+  const lista = document.getElementById('ped-itens-lista');
+  lista.insertAdjacentHTML('afterbegin', bloco);
+  document.getElementById('ped-itens-wrap').classList.remove('hidden');
+  document.getElementById('ped-detalhes-wrap').classList.remove('hidden');
+  document.getElementById('ped-obs').value = p.obs||'';
+  document.getElementById('ped-contato').value = p.contato||'';
+  document.getElementById('ped-prazo').value = p.prazoRecebimento||'';
+  document.getElementById('ped-entrega').value = p.dataEntrega||'';
+  const idAss = a=> a ? ((assinaturas.find(x=>x.nome===a.nome && (x.funcao||'')===(a.funcao||'') && (x.posto||'')===(a.posto||'')) || assinaturas.find(x=>x.nome===a.nome) || {}).id || '') : '';
+  document.getElementById('ped-assin1').value = idAss(p.assinatura1);
+  document.getElementById('ped-assin2').value = idAss(p.assinatura2);
+  document.getElementById('ped-form-titulo').textContent = `Editar Pedido nº ${p.numeroPedido}`;
+  document.getElementById('ped-edit-txt').innerHTML = `✏️ Editando o pedido <b>nº ${escHtml(p.numeroPedido)}</b> · ${escHtml(p.empresaNome)} · emitido em ${escHtml(p.dataEmissao)}. A empresa não pode ser trocada.`;
+  document.getElementById('ped-edit-banner').classList.remove('hidden');
+  document.getElementById('btn-gerar-pedido').textContent = 'Salvar alterações e gerar PDF';
+  document.getElementById('btn-cancelar-edicao-ped2').classList.remove('hidden');
+  const m = document.getElementById('msg-pedido'); m.className=''; m.textContent='';
+  atualizarTotaisPedido(); renderPedidos();
+  try{ document.getElementById('ped-form-titulo').scrollIntoView({ behavior:'smooth', block:'start' }); }catch(e){}
+};
+function sairEdicaoPedido(manterMsg){
+  pedEditId = null; pedEditOrig = null;
+  ['ped-numero','ped-obs','ped-contato','ped-prazo','ped-entrega'].forEach(i=>document.getElementById(i).value='');
+  ['ped-assin1','ped-assin2'].forEach(i=>document.getElementById(i).value='');
+  const sel = document.getElementById('ped-empresa'); sel.disabled = false; sel.value = ''; sel.dispatchEvent(new Event('change'));
+  document.getElementById('ped-form-titulo').textContent = 'Novo Pedido de Gêneros';
+  document.getElementById('ped-edit-banner').classList.add('hidden');
+  document.getElementById('btn-gerar-pedido').textContent = 'Gerar Pedido em PDF';
+  document.getElementById('btn-cancelar-edicao-ped2').classList.add('hidden');
+  if(!manterMsg){ const m = document.getElementById('msg-pedido'); m.className=''; m.textContent=''; }
+  renderPedidos();
+}
+['btn-cancelar-edicao-ped','btn-cancelar-edicao-ped2'].forEach(i=>document.getElementById(i).addEventListener('click', ()=>sairEdicaoPedido()));
+async function salvarEdicaoPedido(pd, msg){
+  if(pedSalvandoEdicao) return;
+  const id = pedEditId; const p = pedidos.find(x=>x.id===id);
+  if(!p || p.arquivado){ msg.className='msg err'; msg.textContent='Este pedido foi arquivado no Histórico de Pedidos e não pode mais ser editado.'; return; }
+  const refs = [...new Set(pd.itens.filter(i=>i.origemPreco==='tabela-mensal').map(i=>i.referenciaPreco).filter(Boolean))];
+  const email = (usuarioAtual.email||'').toLowerCase(); const agora = Date.now();
+  const dados = { ...pd, dataEmissao: p.dataEmissao };
+  delete dados.referenciaPrecos; delete dados.dataEntrega;
+  if(refs.length) dados.referenciaPrecos = refs.join(', ');
+  if(pd.dataEntrega) dados.dataEntrega = pd.dataEntrega;
+  const upd = { ...dados, alteradoPorUid:usuarioAtual.uid, alteradoPorEmail:email, alteradoEm:agora };
+  if(!refs.length && p.referenciaPrecos) upd.referenciaPrecos = deleteField();
+  if(!pd.dataEntrega && p.dataEntrega) upd.dataEntrega = deleteField();
+  const btn = document.getElementById('btn-gerar-pedido');
+  pedSalvandoEdicao = true; btn.disabled = true;
+  try{ await updateDoc(doc(db,'pedidos',id), upd); }
+  catch(err){ msg.className='msg err'; msg.textContent='Erro ao salvar as alterações do pedido: '+err.message; return; }
+  finally{ pedSalvandoEdicao = false; btn.disabled = false; }
+  const antes = p.numeroPedido;
+  delete p.referenciaPrecos; delete p.dataEntrega;
+  Object.assign(p, dados, { alteradoPorEmail:email, alteradoEm:agora });
+  await registrarAuditoria('Editou pedido', `Pedido ${p.numeroPedido}${antes!==p.numeroPedido?` (antes nº ${antes})`:''} · ${p.empresaNome} · ${fmtMoney(p.valorTotal)}`);
+  const txtAg = await sincronizarLembretePedido(id, p);
+  sairEdicaoPedido(true);
+  msg.className='msg ok'; msg.textContent = `Pedido ${p.numeroPedido} alterado com sucesso.` + (txtAg ? ' '+txtAg : '');
+  try{ const docPdf = gerarPDFPedido(p); window.open(docPdf.output('bloburl'), '_blank'); }
+  catch(err){ console.error('Erro ao gerar PDF:', err); msg.className='msg err'; msg.textContent += ' Porém houve erro ao gerar o PDF: '+err.message; }
+}
+// mantém o lembrete de entrega da Agenda de acordo com o pedido editado
+async function sincronizarLembretePedido(pedidoId, p){
+  const doPedido = agenda.filter(a=>a.origem==='pedido' && a.pedidoId===pedidoId);
+  const pend = doPedido.filter(a=>!a.concluida);
+  try{
+    if(!p.dataEntrega){
+      if(!pend.length) return '';
+      for(const a of pend){ await deleteDoc(doc(db,'agenda',a.id)); agenda = agenda.filter(x=>x.id!==a.id); }
+      return 'Lembrete de entrega removido da Agenda.';
+    }
+    const campos = camposLembretePedido(p);
+    if(pend.length){
+      const a = pend[0]; const email = (usuarioAtual.email||'').toLowerCase(); const agora = Date.now();
+      await updateDoc(doc(db,'agenda',a.id), { ...campos, alteradoPorUid:usuarioAtual.uid, alteradoPorEmail:email, alteradoEm:agora });
+      Object.assign(a, campos, { alteradoPorEmail:email, alteradoEm:agora });
+      agLembreteLimpar(a.id);
+      return `Lembrete de entrega na Agenda: ${fmtDataBR(campos.data)} às ${campos.horaInicio}.`;
+    }
+    if(doPedido.length) return ''; // a entrega já foi concluída pela nota fiscal
+    await criarLembretePedido(pedidoId, p);
+    return `Lembrete de entrega criado na Agenda para ${fmtDataBR(campos.data)} às ${campos.horaInicio}.`;
+  }catch(err){ console.error('Erro ao atualizar o lembrete do pedido:', err); return 'Não foi possível atualizar o lembrete na Agenda.'; }
+}
 
 window.verPDFPedido = function(id){
   const p = pedidos.find(x=>x.id===id);
@@ -3984,6 +4134,7 @@ window.removerPedido = async function(id){
   catch(err){ alert('Erro ao excluir: '+err.message); return; }
   await registrarAuditoria('Excluiu pedido', pedExcl ? `Pedido ${pedExcl.numeroPedido} · ${pedExcl.empresaNome}` : id);
   await removerLembretesDoPedido(id);
+  if(pedEditId===id) sairEdicaoPedido();
   pedidos = pedidos.filter(p=>p.id!==id);
   renderPedidos();
 };
@@ -4038,6 +4189,7 @@ document.getElementById('btn-salvar-pedidos').addEventListener('click', async ()
   if(totalBanco) pedidos = totalBanco;
   else ciclo.forEach(p=>Object.assign(p, { arquivado:true, arquivamentoId:arqRef.id, arquivadoEm:agora, arquivadoPorEmail:email }));
   arquivamentosPedidos.push(arquivamentoFromDoc({ id:arqRef.id, data:()=>arqDados }));
+  if(pedEditId && pedidos.some(p=>p.id===pedEditId && p.arquivado)) sairEdicaoPedido();
   renderPedidos();
   if(totalBanco && conferidos !== ciclo.length){
     msgArquivo(`Atenção: ${conferidos} de ${ciclo.length} pedido(s) foram confirmados no arquivo. Os que não foram continuam na lista do ciclo atual; clique em "Salvar Pedidos" de novo para arquivá-los.`, 'err');
@@ -4521,13 +4673,17 @@ async function agExcluir(id, doModal){
   renderAgenda();
 }
 // lembrete automático do Pedido de Gêneros
-async function criarLembretePedido(pedidoId, p){
+function camposLembretePedido(p){
   const [dataE, horaE] = p.dataEntrega.split('T');
   const nes = String(p.numeroEmpenho||'').split(',').map(x=>x.trim()).filter(Boolean);
-  const dados = { userId:uidDono(), titulo:`Entrega — Pedido ${p.numeroPedido} · ${p.empresaNome}`, categoria:'ent', tipo:'compromisso',
-    data:dataE, horaInicio:(horaE||'').slice(0,5), horaFim:'', lembrete:'0',
+  return { titulo:`Entrega — Pedido ${p.numeroPedido} · ${p.empresaNome}`, categoria:'ent', tipo:'compromisso',
+    data:dataE, horaInicio:(horaE||'').slice(0,5), horaFim:'',
     descricao:`Empenho(s): ${nes.join(', ')||'-'} · Valor ${fmtMoney(p.valorTotal)}${p.prazoRecebimento?' · '+p.prazoRecebimento:''}`,
-    concluida:false, origem:'pedido', pedidoId, numerosEmpenho:nes,
+    numerosEmpenho:nes };
+}
+async function criarLembretePedido(pedidoId, p){
+  const dados = { userId:uidDono(), ...camposLembretePedido(p), lembrete:'0',
+    concluida:false, origem:'pedido', pedidoId,
     criadoPorUid:usuarioAtual.uid, criadoPorEmail:(usuarioAtual.email||'').toLowerCase(), criadoEm:Date.now() };
   try{ const ref = await addDoc(collection(db,'agenda'), dados); agenda.push(agendaFromDoc({ id:ref.id, data:()=>dados })); }
   catch(err){ console.error('Erro ao criar o lembrete do pedido:', err); }
